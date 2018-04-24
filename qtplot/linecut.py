@@ -74,6 +74,10 @@ class Linecut(QtGui.QDialog):
         self.b_to_ppt = QtGui.QPushButton('To PPT (Win)', self)
         self.b_to_ppt.clicked.connect(self.on_to_ppt)
         hbox_export.addWidget(self.b_to_ppt)
+        
+        self.b_to_word = QtGui.QPushButton('To Word (Win)', self)
+        self.b_to_word.clicked.connect(self.on_to_word)
+        hbox_export.addWidget(self.b_to_word)
 
         self.b_save_dat = QtGui.QPushButton('Save data...', self)
         self.b_save_dat.clicked.connect(self.on_save)
@@ -268,6 +272,27 @@ class Linecut(QtGui.QDialog):
 
         # Add a hyperlink to the data location to easily open the data again
         shape.ActionSettings[0].Hyperlink.Address = self.main.abs_filename
+
+    def on_to_word(self):
+        """ Some win32 COM magic to interact with word """
+        try:
+            import win32com.client
+            # Connect to an open word application
+            app = win32com.client.GetActiveObject('word.application')
+            app.WindowState=2 #minimize the window so it will come back to the front later
+        except:
+            print('ERROR: win32com library missing or no word file opened')
+            return
+
+        # copy to the clipboard
+        self.on_figure_to_clipboard()
+
+        # Get the current word file and paste the plot
+        worddoc = app.ActiveDocument
+        cend = worddoc.Content.End
+        worddoc.Range(cend-1,cend).Paste()
+        worddoc.Content.InsertAfter('\n')
+        app.WindowState=0 #normal the window size. Now it comes back to the front
 
     def on_save(self):
         if self.x is None or self.y is None:
