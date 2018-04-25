@@ -7,7 +7,8 @@ from PyQt4 import QtGui, QtCore
 
 from .util import FixedOrderFormatter
 import os
-
+import tempfile
+import io
 
 class ExportWidget(QtGui.QWidget):
     def __init__(self, main):
@@ -315,12 +316,11 @@ class ExportWidget(QtGui.QWidget):
 
     def on_copy(self):
         """ Copy the current plot to the clipboard """
-        path = os.path.dirname(os.path.realpath(__file__))
-        path = os.path.join(path, 'test.png')
-        self.fig.savefig(path)
-
-        img = QtGui.QImage(path)
+        buf = io.BytesIO()
+        self.fig.savefig(buf)
+        img = QtGui.QImage.fromData(buf.getvalue())
         QtGui.QApplication.clipboard().setImage(img)
+        buf.close()
 
     def on_to_ppt(self):
         """ Some win32 COM magic to interact with powerpoint """

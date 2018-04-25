@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import io
 import pandas as pd
 import textwrap
 from itertools import cycle
@@ -245,12 +246,11 @@ class Linecut(QtGui.QDialog):
         data.to_clipboard(index=False)
 
     def on_figure_to_clipboard(self):
-        path = os.path.dirname(os.path.realpath(__file__))
-        path = os.path.join(path, 'test.png')
-        self.fig.savefig(path, bbox_inches='tight')
-
-        img = QtGui.QImage(path)
+        buf = io.BytesIO()
+        self.fig.savefig(buf)
+        img = QtGui.QImage.fromData(buf.getvalue())
         QtGui.QApplication.clipboard().setImage(img)
+        buf.close()
 
     def on_to_ppt(self):
         """ Some win32 COM magic to interact with powerpoint """
