@@ -7,7 +7,6 @@ from PyQt4 import QtGui, QtCore
 
 from .util import FixedOrderFormatter
 import os
-import tempfile
 import io
 
 class ExportWidget(QtGui.QWidget):
