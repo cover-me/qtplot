@@ -6,9 +6,7 @@ import os
 import logging
 import sys
 from collections import OrderedDict
-
 from PyQt4 import QtGui, QtCore
-
 from .colormap import Colormap
 from .data import DatFile, Data2D
 from .export import ExportWidget
@@ -16,6 +14,7 @@ from .linecut import Linecut
 from .operations import Operations
 from .settings import Settings
 from .canvas import Canvas
+from .server import qpServer
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +82,8 @@ class QTPlot(QtGui.QMainWindow):
         self.linecut = Linecut(self)
         self.operations = Operations(self)
         self.settings = Settings(self)
-
+        self.qpServer = qpServer(self)
+        
         self.init_ui()
         self.init_settings()
         self.init_logging()
@@ -92,7 +92,7 @@ class QTPlot(QtGui.QMainWindow):
 
         if filename is not None:
             self.load_dat_file(filename)
-
+            
     def init_settings(self):
         # Get the home directory of the computer user
         self.home_dir = os.path.expanduser('~')
@@ -375,7 +375,7 @@ class QTPlot(QtGui.QMainWindow):
         self.linecut.show()
         self.operations.show()
         self.show()
-
+        
     def update_ui(self, reset=True, opening_state=False):
         """
         Update the user interface, typically called on loading new data (not
@@ -809,11 +809,13 @@ class QTPlot(QtGui.QMainWindow):
         self.linecut.close()
         self.operations.close()
         self.settings.close()
+        self.qpServer.deleteLater()
         self.closed = True
+
+
 
 def main():
     app = QtGui.QApplication(sys.argv)
-
     if len(sys.argv) > 1 and os.path.isfile(sys.argv[1]):
         QTPlot(filename=sys.argv[1])
     else:
