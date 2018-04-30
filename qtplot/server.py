@@ -25,6 +25,7 @@ class qpServer(QtCore.QObject):
         if key == 'FILE':
             if os.path.isfile(value) and value.endswith('.dat'):
                 self.main.load_dat_file(value)
+                self.main.show()
                 return 'FILE:Done!'
             else:
                 return 'FILE:Error file path.'
