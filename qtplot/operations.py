@@ -111,7 +111,7 @@ class Operation(QtGui.QWidget):
 class Operations(QtGui.QDialog):
     """ The window containing all operations. """
     def __init__(self, parent=None):
-        super(Operations, self).__init__(None)
+        super(Operations, self).__init__(None,flags = QtCore.Qt.Tool)
 
         self.main = parent
         self.columns = None
