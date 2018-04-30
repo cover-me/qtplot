@@ -33,7 +33,7 @@ class Linetrace(plt.Line2D):
 
 class Linecut(QtGui.QDialog):
     def __init__(self, main=None):
-        super(Linecut, self).__init__(None)
+        super(Linecut, self).__init__(None,flags = QtCore.Qt.Tool)
 
         self.main = main
 
