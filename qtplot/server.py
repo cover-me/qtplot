@@ -18,26 +18,33 @@ class qpServer(QtCore.QObject):
         self.client.write(self.handle_remote_msg(msg))
         self.client.disconnectFromHost()
     def handle_remote_msg(self,msg):
-        try:
-            key,value = msg.split(':',1)
-        except:
-            return 'Unknown msg!'
-        if key == 'FILE':
-            if os.path.isfile(value) and value.endswith('.dat'):
-                self.main.load_dat_file(value)
-                self.main.show()
-                return 'FILE:Done!'
-            else:
-                return 'FILE:Error file path.'
-        elif key == 'AXES':
+        cmd = msg.split(';')
+        msg_return = ''
+        for i in cmd:
             try:
-                x_ind,y_ind,z_ind = map(int,value.split(','))
+                key,value = i.split(':',1)
+                if key == 'FILE':
+                    if os.path.isfile(value) and value.endswith('.dat'):
+                        self.main.load_dat_file(value)
+                        msg_return += 'FILE:Done!;'
+                    else:
+                        msg_return += 'FILE:Error file path;'
+                elif key == 'AXES':
+                    try:
+                        x_ind,y_ind,z_ind = map(int,value.split(','))
+                    except:
+                        msg_return += 'AXES:Index error;'
+                    self.main.cb_x.setCurrentIndex(x_ind)
+                    self.main.cb_y.setCurrentIndex(y_ind)
+                    self.main.cb_z.setCurrentIndex(z_ind)
+                    self.main.on_data_change()
+                    msg_return += 'AXES:Done!;'
+                elif key == 'SHOW':
+                    self.main.showMinimized()
+                    self.main.showNormal()
+                    msg_return += 'SHOW:Done!;'
+                else:
+                    msg_return += 'Unknown key:%s;'%key
             except:
-                return 'AXES:Index error!'
-            self.main.cb_x.setCurrentIndex(x_ind)
-            self.main.cb_y.setCurrentIndex(y_ind)
-            self.main.cb_z.setCurrentIndex(z_ind)
-            self.main.on_data_change()
-            return 'AXES:Done!'
-        else:
-            return 'Unknown key!'
+                msg_return +=  'Unknown msg:%s;'%i
+        return 'qtplot:'+msg_return
