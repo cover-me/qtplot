@@ -69,10 +69,11 @@ class DatFile:
                 self.shape = tuple(map(int, column_sizes.split('\t')))
 
                 self.ndim = len(self.shape)
-
-        self.data = read_table(filename, comment='#', sep='\t',
-                               header=None).values
-
+        self.data = None
+        try:
+            self.data = read_table(filename, comment='#', sep='\t', header=None).values
+        except:
+            logger.warning('Failed to read table from the file')
         self.load_qtlab_settings(filename)
 
     def load_qtlab_settings(self, filename):
@@ -138,21 +139,19 @@ class DatFile:
         -   Pivot into matrix together with selected x, y, and z columns
         -   Transpose to correct form by checking data ranges
         """
+        if self.data is None:
+            return None
         if x_name == '':
             logger.error('You have to select a parameter for the x-axis')
-
             return None
 
         if y_name != '' and self.ndim < 2:
             logger.warning('Ignoring the y-axis parameter since it is a 1D dataset')
-
             y_name = ''
 
         setpoint_columns = list(self.sizes.keys())
-
         if len(setpoint_columns) == 0:
             logger.error('No setpoint columns with a size property were found')
-
             return None
         elif len(setpoint_columns) == 1:
             setpoint_columns.append('')
