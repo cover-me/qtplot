@@ -1,7 +1,12 @@
 from PyQt4 import QtCore, QtNetwork
 import os
+import logging
+
+logger = logging.getLogger(__name__)
+
 class qpServer(QtCore.QObject):
     def __init__(self, main, port=1787):
+        logger.info('Initialize tcp server at port %s...'%port)
         super(qpServer, self).__init__()
         self.main = main
         self.tcpServer = QtNetwork.QTcpServer(self)
@@ -41,6 +46,7 @@ class qpServer(QtCore.QObject):
                     msg_return += 'AXES:Done!;'
                 elif key == 'SHOW':
                     self.main.showMinimized()
+                    self.main.activateWindow()
                     self.main.showNormal()
                     msg_return += 'SHOW:Done!;'
                 else:

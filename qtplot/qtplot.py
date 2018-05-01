@@ -82,12 +82,10 @@ class QTPlot(QtGui.QMainWindow):
         self.linecut = Linecut(self)
         self.operations = Operations(self)
         self.settings = Settings(self)
-        self.qpServer = qpServer(self)
-        
         self.init_ui()
         self.init_settings()
         self.init_logging()
-
+        self.qpServer = qpServer(self)
         self.settings.populate_ui()
 
         if filename is not None:
