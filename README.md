@@ -62,4 +62,4 @@ Replace [directory] with the path of your qtplot project folder.
 		print 'socket failed.'
 	_update_qtplot(PATH_OF_YOUR_DATA_FILE)
 
-Replace 'PATH_OF_YOUR_DATA_FILE' with a real path.
+Replace 'PATH_OF_YOUR_DATA_FILE' with a real path. It will update the data file, reset the axes to 1,2,4, and show qtplot.
