@@ -62,4 +62,11 @@ Replace [directory] with the path of your qtplot project folder.
 		print 'socket failed.'
 	_update_qtplot(PATH_OF_YOUR_DATA_FILE)
 
-Replace 'PATH_OF_YOUR_DATA_FILE' with a real path. It will update the data file, reset the axes to 1,2,4, and show qtplot.
+Replace 'PATH_OF_YOUR_DATA_FILE' with a real path. It will update the data file, reset the axes to 1,2,4, and show qtplot. Make sure the meta information has been flushed into the file, or the file would not be open. If you are using qtlab, there should be something looks like the following codes in your measurement script:
+
+	data = qt.Data(filename)
+	...
+	data.create_file()
+	
+add a new line with `data._file.flush()` below `data.create_file()`, the meta information would then be flushed to the hard disk.
+
