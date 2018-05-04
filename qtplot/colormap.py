@@ -9,7 +9,7 @@ class Colormap:
         """ Construct from a spyview colormap. """
         dir = os.path.dirname(os.path.realpath(__file__))
         path = os.path.join(dir, filename)
-
+        self.path = path
         self.colors = np.loadtxt(path)
         self.gamma = 1
         self.min, self.max = 0, 1

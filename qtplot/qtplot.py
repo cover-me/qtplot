@@ -18,7 +18,7 @@ from .server import qpServer
 
 logger = logging.getLogger(__name__)
 
-profile_defaults = OrderedDict((
+PROFILE_DEFAULTS = OrderedDict((
     ('operations', ''),
     ('sub_series_V', ''),
     ('sub_series_I', ''),
@@ -62,44 +62,35 @@ class QTPlot(QtGui.QMainWindow):
 
     def __init__(self, filename=None):
         super(QTPlot, self).__init__(None)
-
-        self.first_data_file = True
+        self.settings_dir = os.path.join(os.path.expanduser('~'), '.qtplot')
+        self.is_first_data_file = True
         self.name = None
         self.closed = False
-
-        # In case of a .dat file
         self.filename = None
         self.abs_filename = None
-        self.dat_file = None
-
-        # In case of a qcodes DataSet(Lite)
-        self.data_set = None
-
-        # Data2D object derived from either DatFile or DataSet(Lite)
         self.data = None
+        
+        self.init_logging()
 
-        # Create the subwindows
+        self.dat_file = DatFile()
         self.linecut = Linecut(self)
         self.operations = Operations(self)
         self.settings = Settings(self)
-        self.init_ui()
-        self.init_settings()
-        self.init_logging()
         self.qpServer = qpServer(self)
+        
+        self.init_settings()
+        self.init_ui()
         self.settings.populate_ui()
 
         if filename is not None:
             self.load_dat_file(filename)
             
     def init_settings(self):
-        # Get the home directory of the computer user
-        self.home_dir = os.path.expanduser('~')
-
-        self.settings_dir = os.path.join(self.home_dir, '.qtplot')
-        self.profiles_dir = os.path.join(self.home_dir, '.qtplot',
-                                                        'profiles')
-        self.operations_dir = os.path.join(self.home_dir, '.qtplot',
-                                                          'operations')
+        # settings_dir/qtplot.ini: {'default_profile': 'default.ini'}
+        # settings_dir/profiles/default.ini: PROFILE_DEFAULTS
+        # profile_settings: {'default_profile': 'default.ini'}
+        self.profiles_dir = os.path.join(self.settings_dir, 'profiles')
+        self.operations_dir = os.path.join(self.settings_dir, 'operations')
 
         # Create the program directories if they don't exist yet
         for dir in [self.settings_dir, self.profiles_dir, self.operations_dir]:
@@ -109,33 +100,35 @@ class QTPlot(QtGui.QMainWindow):
         self.qtplot_ini_file = os.path.join(self.settings_dir, 'qtplot.ini')
 
         defaults = {'default_profile': 'default.ini'}
-        self.qtplot_ini = configparser.SafeConfigParser(defaults)
-        self.profile_ini = configparser.SafeConfigParser(profile_defaults)
+        self.profile_settings = defaults
+        self.qtplot_ini = configparser.SafeConfigParser(defaults)#initialize qtplot_ini
+        self.profile_ini = configparser.SafeConfigParser(PROFILE_DEFAULTS)#initialize profile_ini
 
-        # If a qtplot.ini exists: read it to extract the default profile
-        # Else: save the default qtplot.ini
+        # If a qtplot.ini exists: read it to qtplot_ini
+        # Else: save the qtplot_ini as file qtplot.ini
         if os.path.exists(self.qtplot_ini_file):
             self.qtplot_ini.read(self.qtplot_ini_file)
         else:
             with open(self.qtplot_ini_file, 'w') as config_file:
                 self.qtplot_ini.write(config_file)
 
-        default_profile = self.qtplot_ini.get('DEFAULT', 'default_profile')
-        self.profile_ini_file = os.path.join(self.profiles_dir,
-                                             default_profile)
+        default_profile = self.qtplot_ini.get('DEFAULT', 'default_profile')#get filename
+        self.profile_ini_file = os.path.join(self.profiles_dir, default_profile)
 
         # if the default profile ini doesn't exist, write defaults to a file
+        # if exist, will read it later
         if not os.path.isfile(self.profile_ini_file):
             with open(self.profile_ini_file, 'w') as config_file:
                 self.profile_ini.write(config_file)
 
-        self.profile_settings = defaults
+
 
     def init_logging(self):
         formatter = logging.Formatter('%(levelname)s:%(name)s:%(message)s')
         root_logger = logging.getLogger()
         root_logger.setLevel(logging.INFO)
-
+        if not os.path.exists(self.settings_dir):
+            os.makedirs(self.settings_dir)
         log_file = os.path.join(self.settings_dir, 'log.txt')
         file_handler = logging.FileHandler(log_file)
         file_handler.setFormatter(formatter)
@@ -374,7 +367,7 @@ class QTPlot(QtGui.QMainWindow):
         self.operations.show()
         self.show()
         
-    def update_ui(self, reset=True, opening_state=False):
+    def update_ui(self, opening_state=False):
         """
         Update the user interface, typically called on loading new data (not
         on updating data).
@@ -385,80 +378,64 @@ class QTPlot(QtGui.QMainWindow):
         """
         if self.name is not None:
             self.setWindowTitle(self.name)
+            parameters = [''] + self.get_parameter_names()
+            # Repopulate the combo boxes and keep the indexes
+            for cb in self.combo_boxes:
+                i = cb.currentIndex()
+                cb.clear()
+                cb.addItems(parameters)
+                cb.setCurrentIndex(i)
 
-        parameters = [''] + self.get_parameter_names()
+            # Load the series resistance
+            if opening_state:
+                R = self.profile_settings['sub_series_R']
+                self.le_r.setText(R)
 
-        # Repopulate the combo boxes
-        for cb in self.combo_boxes:
-            i = cb.currentIndex()
+            # Reset the selected parameters (combo indexes)
+            if self.is_first_data_file:
+                default_indices = [0, 0, 1, 2, 4]#['sub_series_V', 'sub_series_I', 'x', 'y', 'z']
+                for cb, i in zip(self.combo_boxes, default_indices):
+                    cb.setCurrentIndex(i)
+                self.is_first_data_file = False
 
-            cb.clear()
-            cb.addItems(parameters)
-            cb.setCurrentIndex(i)
+            # If the dataset is 1D; disable the y-parameter combobox
+            if self.dat_file is not None:
+                if self.dat_file.ndim == 1:
+                    self.cb_y.setCurrentIndex(0)
+                    self.cb_y.setEnabled(False)
+                else:
+                    self.cb_y.setEnabled(True)
 
-        # Load the series resistance
-        if opening_state:
-            R = self.profile_settings['sub_series_R']
-            self.le_r.setText(R)
-
-        # Set the selected parameters
-        if reset and self.first_data_file:
-            names = ['sub_series_V', 'sub_series_I', 'x', 'y', 'z']
-            default_indices = [0, 0, 1, 1, 2, 2, 4]
-
-            for i, cb in enumerate(self.combo_boxes):
-                parameter = self.profile_settings[names[i]]
-
-                index = cb.findText(parameter)
-
-                cb.setCurrentIndex(index)
-
-                if index == -1:
-                    cb.setCurrentIndex(default_indices[i])
-
-        # If the dataset is 1D; disable the y-parameter combobox
-        if self.dat_file is not None:
-            if self.dat_file.ndim == 1:
-                self.cb_y.setCurrentIndex(0)
-                self.cb_y.setEnabled(False)
+            # Set the colormap
+            cmap = self.profile_settings['colormap']
+            # The path that is saved in the profile can use either / or \\
+            # as a path separator. Here we convert it to what the OS uses.
+            if os.path.sep == '/':
+                cmap = cmap.replace('\\', '/')
+            elif os.path.sep == '\\':
+                cmap = cmap.replace('/', '\\')
+            index = self.cb_cmaps.findText(cmap)
+            if index != -1:
+                self.cb_cmaps.setCurrentIndex(index)
             else:
-                self.cb_y.setEnabled(True)
-
-        # Set the colormap
-        cmap = self.profile_settings['colormap']
-
-        # The path that is saved in the profile can use either / or \\
-        # as a path separator. Here we convert it to what the OS uses.
-        if os.path.sep == '/':
-            cmap = cmap.replace('\\', '/')
-        elif os.path.sep == '\\':
-            cmap = cmap.replace('/', '\\')
-
-        index = self.cb_cmaps.findText(cmap)
-
-        if index != -1:
-            self.cb_cmaps.setCurrentIndex(index)
+                logger.error('update_ui: Could not find the colormap file %s' % cmap)
         else:
-            logger.error('Could not find the colormap file %s' % cmap)
+            logger.warning('update_ui: file name is None, nothing updated')
 
     def load_dat_file(self, filename):
         """
-        Load a .dat file, it's .set file if present, update the GUI elements,
+        Load a .dat or .npy file, it's .set file if present, update the GUI elements,
         and fire an on_data_change event to update the plots.
         """
-        self.dat_file = DatFile(filename)
-        self.settings.fill_tree()
-
-        if filename != self.filename:
+        is_new_filename = self.dat_file.update_file(filename)
+        if is_new_filename:
+            self.settings.fill_tree()
             path, self.name = os.path.split(filename)
             self.filename = filename
             self.abs_filename = os.path.abspath(filename)
-
             self.open_state(self.profile_ini_file)
-
-            # self.update_ui()
-
-        # self.on_data_change()
+        else:
+            self.on_data_change()
 
     def update_parameters(self):
         pass
@@ -532,33 +509,28 @@ class QTPlot(QtGui.QMainWindow):
 
     def open_state(self, filename):
         """ Load all settings into the GUI """
+        # profile_ini_file and operations files
         self.profile_ini_file = os.path.join(self.profiles_dir, filename)
         self.profile_name = os.path.splitext(os.path.basename(filename))[0]
-
         operations_file = os.path.join(self.operations_dir,
                                        self.profile_name + '.json')
-
-        # Load the operations
+        # Load the operations and the specified profile .ini
         if os.path.exists(operations_file):
             self.operations.load(operations_file)
         else:
             logger.warning('No operations file present for selected profile')
-
-        # Read the specified profile .ini
         self.profile_ini.read(self.profile_ini_file)
-
-        # Load the profile into a dict
-        for option in profile_defaults.keys():
+        
+        # Update profile_settings with profile_ini
+        for option in PROFILE_DEFAULTS.keys():
             value = self.profile_ini.get('DEFAULT', option)
-
             if value in ['False', 'True']:
                 value = self.profile_ini.getboolean('DEFAULT', option)
-
             self.profile_settings[option] = value
-
+        
+        # Apply R to sub_series_r
         try:
-            R = float(self.profile_settings['sub_series_R'])
-
+            R = float(self.profile_settings['sub_series_R'])#ValueError if empty string
             self.sub_series_r(self.profile_settings['sub_series_V'],
                               self.profile_settings['sub_series_I'],
                               R)
@@ -566,10 +538,8 @@ class QTPlot(QtGui.QMainWindow):
             logger.warning('Could not parse resistance value in the profile')
 
         self.update_ui(opening_state=True)
-
+        self.on_cmap_change(update_canvas=False)# should only update the canvas once
         self.on_data_change()
-
-        self.on_cmap_change()
 
         self.export_widget.populate_ui()
         self.linecut.populate_ui()
@@ -579,24 +549,8 @@ class QTPlot(QtGui.QMainWindow):
             self.export_widget.on_update()
 
     def get_parameter_names(self):
-        if self.dat_file is not None:
-            # return list(self.dat_file.df.columns.values)
-            return self.dat_file.ids
-        elif self.data_set is not None:
-            # Sort in some kind of order?
-            # Make property of DataSetLite?
-            # TODO: Use full names/labels
-            return list(self.data_set.arrays)
-        else:
-            return []
+       return self.dat_file.ids
 
-    def set_data_set(self, data_set, update_ui=False):
-        self.data_set = data_set
-
-        if update_ui:
-            self.update_ui()
-
-        self.on_data_change()
 
     def on_data_change(self):
         """
@@ -607,25 +561,12 @@ class QTPlot(QtGui.QMainWindow):
         A clean version of the Data2D is retrieved from the DatFile or DataSet,
         all the operations are applied to the data, and it is plotted.
         """
-        if self.dat_file is None and self.data_set is None:
-            return
-
         # Get the selected axes from the interface
         x_name, y_name, data_name = self.get_axis_names()
-
-        # Update the Data2D from either a qtlab or qcodes dataset
-        if self.dat_file is not None:
-            self.data = self.dat_file.get_data(x_name, y_name, data_name)
-
-            if self.data is None:
-                return
-        elif self.data_set is not None:
-            # Create a Data2D object from qcodes DataSet
-            x = self.data_set.arrays[x_name].array
-            y = self.data_set.arrays[y_name].array
-            z = self.data_set.arrays[data_name].array
-
-            self.data = Data2D(x, y, z)
+        # Update the Data2D
+        self.data = self.dat_file.get_data(x_name, y_name, data_name) # return Data2D object
+        if self.data is None:
+            return
 
         # Apply the selected operations
         self.data = self.operations.apply_operations(self.data)
@@ -654,8 +595,7 @@ class QTPlot(QtGui.QMainWindow):
     def on_load_dat(self, event):
         open_directory = self.profile_settings['open_directory']
         filename = str(QtGui.QFileDialog.getOpenFileName(directory=open_directory,
-                                                         filter='*.dat'))
-
+                                                         filter='*.dat, *.npy'))
         if filename != "":
             self.load_dat_file(filename)
 
@@ -663,13 +603,10 @@ class QTPlot(QtGui.QMainWindow):
         if self.filename:
             self.load_dat_file(self.filename)
 
-            self.on_data_change()
-
     def on_swap_axes(self, event):
         x, y = self.cb_x.currentIndex(), self.cb_y.currentIndex()
         self.cb_x.setCurrentIndex(y)
         self.cb_y.setCurrentIndex(x)
-
         self.on_data_change()
 
     def sub_series_r(self, V_param, I_param, R):
@@ -690,7 +627,7 @@ class QTPlot(QtGui.QMainWindow):
                           str(self.cb_i.currentText()),
                           float(self.le_r.text()))
 
-        self.update_ui(reset=False)
+        self.update_ui()
 
         x_col = str(self.cb_x.currentText())
         y_col = str(self.cb_y.currentText())
@@ -704,19 +641,19 @@ class QTPlot(QtGui.QMainWindow):
 
         self.on_data_change()
 
-    def on_cmap_change(self, event=None):
+    def on_cmap_change(self, event=None, update_canvas = True):
         selected_cmap = str(self.cb_cmaps.currentText())
 
         path = os.path.dirname(os.path.realpath(__file__))
         path = os.path.join(path, 'colormaps', selected_cmap)
-
-        new_colormap = Colormap(path)
-
-        new_colormap.min = self.canvas.colormap.min
-        new_colormap.max = self.canvas.colormap.max
-
-        self.canvas.colormap = new_colormap
-        self.canvas.update()
+        
+        if path != self.canvas.colormap.path:
+            new_colormap = Colormap(path)
+            new_colormap.min = self.canvas.colormap.min
+            new_colormap.max = self.canvas.colormap.max
+            self.canvas.colormap = new_colormap
+            if update_canvas:
+                self.canvas.update()
 
     def on_min_max_entered(self):
         if self.data is not None:
@@ -795,12 +732,11 @@ class QTPlot(QtGui.QMainWindow):
         if event.mimeData().hasUrls():
             url = str(event.mimeData().urls()[0].toString())
 
-            if url.endswith('.dat'):
+            if url.endswith('.dat') or url.endswith('.npy'):
                 event.accept()
 
     def dropEvent(self, event):
         filepath = str(event.mimeData().urls()[0].toLocalFile())
-
         self.load_dat_file(filepath)
 
     def closeEvent(self, event):
@@ -808,6 +744,7 @@ class QTPlot(QtGui.QMainWindow):
         self.operations.close()
         self.settings.close()
         self.qpServer.deleteLater()
+        del self.dat_file.data # data may be a mmap
         self.closed = True
 
 
