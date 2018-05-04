@@ -28,10 +28,10 @@ class DatFile:
         self.data = None
     
     def update_file(self, filename):
-        if self.data is not None:
-            del self.data
         if self.filename != filename:
             logger.info('Loading a new file: %s' %filename)
+            if self.data is not None:
+                del self.data
             self.__init__()
             self.filename = filename
             self.load_qtlab_settings()# load .set file
@@ -42,11 +42,11 @@ class DatFile:
             self.load_data()# load data
             return False#old file
 
-            
     def load_data(self):
         try:
             if self.filename.endswith('.npy'):
-                self.data = np.load(self.filename, mmap_mode='r')
+                if self.data is None:
+                    self.data = np.load(self.filename, mmap_mode='r')
             else:
                 self.data = read_table(self.filename, comment='#', sep='\t', header=None).values
             if len(self.data.shape)!=2 or self.data.shape[1]!=len(self.ids):
