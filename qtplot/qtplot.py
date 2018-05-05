@@ -15,6 +15,7 @@ from .operations import Operations
 from .settings import Settings
 from .canvas import Canvas
 from .server import qpServer
+from time import time
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,7 @@ class QTPlot(QtGui.QMainWindow):
         self.closed = False
         self.filename = None
         self.abs_filename = None
+        self.max_load_time = 0
         self.data = None
         
         self.init_logging()
@@ -353,6 +355,8 @@ class QTPlot(QtGui.QMainWindow):
         self.status_bar.addWidget(self.l_position, 1)
         self.l_slope = QtGui.QLabel('Slope: -')
         self.status_bar.addWidget(self.l_slope)
+        self.load_time = QtGui.QLabel()
+        self.status_bar.addWidget(self.load_time)        
         self.setStatusBar(self.status_bar)
 
         self.main_widget.setFocus()
@@ -427,6 +431,7 @@ class QTPlot(QtGui.QMainWindow):
         Load a .dat or .npy file, it's .set file if present, update the GUI elements,
         and fire an on_data_change event to update the plots.
         """
+        t0 = time()
         is_new_filename = self.dat_file.update_file(filename)
         if is_new_filename:
             self.settings.fill_tree()
@@ -436,7 +441,11 @@ class QTPlot(QtGui.QMainWindow):
             self.open_state(self.profile_ini_file)
         else:
             self.on_data_change()
-
+        t2 = time()
+        ld_time = (t2-t0)*1000
+        self.max_load_time = max(self.max_load_time,ld_time)
+        self.load_time.setText('%d (%d) ms'%(ld_time,self.max_load_time))
+        
     def update_parameters(self):
         pass
 
@@ -581,8 +590,8 @@ class QTPlot(QtGui.QMainWindow):
         # Update the linecut
         self.canvas.draw_linecut(None, old_position=True)
 
-        if np.isnan(self.data.z).any():
-            logger.warning('The data contains NaN values')
+        #if np.isnan(self.data.z).any():
+            #logger.warning('The data contains NaN values')
 
     def get_axis_names(self):
         """ Get the parameters that are currently selected to be plotted """
