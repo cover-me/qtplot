@@ -49,6 +49,9 @@ class qpServer(QtCore.QObject):
                     self.main.activateWindow()
                     self.main.showNormal()
                     msg_return += 'SHOW:Done!;'
+                elif key == 'REFR':
+                    if self.main.filename == value:
+                        self.main.load_dat_file(value)
                 else:
                     msg_return += 'Unknown key:%s;'%key
             except:
