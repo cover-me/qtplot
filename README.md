@@ -70,3 +70,7 @@ Replace 'PATH_OF_YOUR_DATA_FILE' with a real path. It will update the data file,
 	
 add a new line with `data._file.flush()` below `data.create_file()`, the meta information would then be flushed to the hard disk.
 
+## To Do (no big problems...)
+Fix the strange behaviour when plot the second line.
+
+Speed up for realtime plotting (log, data,...)
