@@ -20,7 +20,9 @@ class qpServer(QtCore.QObject):
         self.client.disconnected.connect(self.client.deleteLater)
     def on_ready_read(self):
         msg = self.client.readAll().data()
-        self.client.write(self.handle_remote_msg(msg))
+        msg_return = self.handle_remote_msg(msg)
+        if msg_return:
+            self.client.write(msg_return)
         self.client.disconnectFromHost()
     def handle_remote_msg(self,msg):
         cmd = msg.split(';')
@@ -56,4 +58,5 @@ class qpServer(QtCore.QObject):
                     msg_return += 'Unknown key:%s;'%key
             except:
                 msg_return +=  'Unknown msg:%s;'%i
-        return 'qtplot:'+msg_return
+        msg_return = 'qtplot:'+msg_return if msg_return != '' else ''
+        return msg_return
