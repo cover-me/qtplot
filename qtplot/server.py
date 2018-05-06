@@ -20,7 +20,7 @@ class qpServer(QtCore.QObject):
         self.client.disconnected.connect(self.client.deleteLater)
     def on_ready_read(self):
         msg = self.client.readAll().data()
-        if msg != ''
+        if msg != '':
             msg_return = self.handle_remote_msg(msg)
             if msg_return:
                 self.client.write(msg_return)
