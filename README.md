@@ -47,6 +47,55 @@ Replace [directory] with the path of your qtplot project folder.
 
 Sometimes the excutable may fail to run on a computer because of missing init.tcl and .tk files. Click [here](https://stackoverflow.com/questions/42180492/pyinstaller-fails-on-windows-7-cant-find-a-usable-init-tcl) for a solution (I prefer copying the missing file manually).
 
+## Data file
+
+### .dat file (qtlab)
+
+If a file has an extension of .dat and starts with "# Filename: " in its first line, it would be recognized as a qtlab file. A typical qtlab file is shown as following:
+
+	# Filename: data_9.dat
+	# Timestamp: Wed May 02 23:30:49 2018
+
+	# Column 1:
+	#	end: 4000.0
+	#	name: dac7 (Vg(*30mV))
+	#	size: 201
+	#	start: 0.0
+	#	type: coordinate
+	# Column 2:
+	#	end: 0
+	#	name: y_parameter (none)
+	#	size: 1
+	#	start: 0
+	#	type: coordinate
+	# Column 3:
+	#	end: 0
+	#	name: z_parameter (none)
+	#	size: 1
+	#	start: 0
+	#	type: coordinate
+	# Column 4:
+	#	name: lockin 1
+	#	type: value
+
+	0.000000000000e+00	0	0	0
+	2.000000000000e+01	0	0	0
+
+Lines start with a "#" ara comment lines containing meta information.
+
+The rest are data. Data is obtained with a N-dimensional scan. Each dimension corresponds to a coordinate column (a column with a type of "coordinate"). For example, if one scans V_bias and V_gate, the setting values of V_bias and V_gate would be the coordinate columns. This program uses coordinate columns to determine how points of each line in data are arranged to plot a 2d figure.
+
+### .dat file (QCoDeS)
+
+Any .dat file not recognized as a qtlab file would be treated as a QCoDeS file.
+
+### .npy file
+
+File \[NAME\].npy could be loaded only if there exists a file named \[NAME\].meta.txt in the same directory. File \[NAME\].meta.txt should contains the meta infomation with a qtlab format.
+
+The data is loaded by `np.load(self.filename, mmap_mode='r')`.
+
+
 ## How To
 
 ### Update the data file by an external program (python)
