@@ -24,7 +24,7 @@ WinPython is a free open-source portable distribution of Python.
 
 Download WinPython-32bit-2.7.9.5 installer and run it. The installer only copies files to a destination directory.
  
-Open "WinPython Command Prompt.exe" in the destination directory. Type "pip install qtplot".
+Open "WinPython Command Prompt.exe" in the destination directory. Type "pip install qtplot". Some of you packages may be auto degraded/updated to meet the requirement of qtplot.
 
 Find qtplot.exe in folder \python-2.7.9\Scripts.
 
@@ -44,6 +44,8 @@ Assuming the file you created names 'qt_plot.py' and WinPython-32bit-2.7.9.5 is 
 	pyinstaller --hidden-import vispy.app.backends._pyqt4 --add-data qtplot\colormaps;qtplot\colormaps --noconsole qt_plot.py
 
 Replace [directory] with the path of your qtplot project folder.
+
+Sometimes the excutable may fail to run on a computer because of missing init.tcl and .tk files. Click [here](https://stackoverflow.com/questions/42180492/pyinstaller-fails-on-windows-7-cant-find-a-usable-init-tcl) for a solution (I prefer copying the missing file manually).
 
 ## How To
 
