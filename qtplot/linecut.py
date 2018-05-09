@@ -34,7 +34,7 @@ class Linetrace(plt.Line2D):
 class Linecut(QtGui.QDialog):
     def __init__(self, main=None):
         super(Linecut, self).__init__(main)
-
+        
         self.main = main
 
         self.fig, self.ax = plt.subplots()
@@ -390,8 +390,11 @@ class Linecut(QtGui.QDialog):
         self.canvas.draw()
 
     def show_window(self):
-        self.show()
-        self.raise_()
+        if self.isHidden():
+            self.show()
+            self.raise_()
+        else:
+            self.hide()
 
     def closeEvent(self, event):
         self.hide()

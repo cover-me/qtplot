@@ -345,8 +345,11 @@ class Operations(QtGui.QDialog):
         return copy
 
     def show_window(self):
-        self.show()
-        self.raise_()
+        if self.isHidden():
+            self.show()
+            self.raise_()
+        else:
+            self.hide()
 
     def update_plot(func):
         def wrapper(self):
@@ -446,7 +449,8 @@ class Operations(QtGui.QDialog):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return:
             self.main.on_data_change()
-
+        elif event.key() == QtCore.Qt.Key_Escape:
+            self.hide()
     def closeEvent(self, event):
         self.hide()
         event.ignore()

@@ -132,7 +132,7 @@ class QTPlot(QtGui.QMainWindow):
         if not os.path.exists(self.settings_dir):
             os.makedirs(self.settings_dir)
         log_file = os.path.join(self.settings_dir, 'log.txt')
-        file_handler = logging.FileHandler(log_file)
+        file_handler = logging.FileHandler(log_file, mode='w')
         file_handler.setFormatter(formatter)
         root_logger.addHandler(file_handler)
 
