@@ -33,8 +33,8 @@ class Linetrace(plt.Line2D):
 
 class Linecut(QtGui.QDialog):
     def __init__(self, main=None):
-        super(Linecut, self).__init__(None)
-
+        super(Linecut, self).__init__(main)
+        
         self.main = main
 
         self.fig, self.ax = plt.subplots()
@@ -256,22 +256,23 @@ class Linecut(QtGui.QDialog):
         """ Some win32 COM magic to interact with powerpoint """
         try:
             import win32com.client
+            app = win32com.client.GetActiveObject('PowerPoint.Application')
+            app.WindowState=2 #minimize the window so it will come back to the front later
         except ImportError:
-            print('ERROR: The win32com library needs to be installed')
+            print('ERROR: win32com library missing or no ppt file opened')
             return
 
         # First, copy to the clipboard
         self.on_figure_to_clipboard()
-
-        # Connect to an open PowerPoint application
-        app = win32com.client.Dispatch('PowerPoint.Application')
 
         # Get the current slide and paste the plot
         slide = app.ActiveWindow.View.Slide
         shape = slide.Shapes.Paste()
 
         # Add a hyperlink to the data location to easily open the data again
-        shape.ActionSettings[0].Hyperlink.Address = self.main.abs_filename
+        if self.main.abs_filename:
+            shape.ActionSettings[0].Hyperlink.Address = self.main.abs_filename
+        app.WindowState=1 #normal the window size. Now it comes back to the front
 
     def on_to_word(self):
         """ Some win32 COM magic to interact with word """
@@ -389,8 +390,11 @@ class Linecut(QtGui.QDialog):
         self.canvas.draw()
 
     def show_window(self):
-        self.show()
-        self.raise_()
+        if self.isHidden():
+            self.show()
+            self.raise_()
+        else:
+            self.hide()
 
     def closeEvent(self, event):
         self.hide()

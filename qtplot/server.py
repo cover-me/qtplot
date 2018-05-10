@@ -1,7 +1,12 @@
 from PyQt4 import QtCore, QtNetwork
 import os
+import logging
+
+logger = logging.getLogger(__name__)
+
 class qpServer(QtCore.QObject):
     def __init__(self, main, port=1787):
+        logger.info('Initialize tcp server at port %s...'%port)
         super(qpServer, self).__init__()
         self.main = main
         self.tcpServer = QtNetwork.QTcpServer(self)
@@ -15,28 +20,44 @@ class qpServer(QtCore.QObject):
         self.client.disconnected.connect(self.client.deleteLater)
     def on_ready_read(self):
         msg = self.client.readAll().data()
-        self.client.write(self.handle_remote_msg(msg))
+        if msg != '':
+            msg_return = self.handle_remote_msg(msg)
+            if msg_return:
+                self.client.write(msg_return)
         self.client.disconnectFromHost()
     def handle_remote_msg(self,msg):
-        try:
-            key,value = msg.split(':',1)
-        except:
-            return 'Unknown msg!'
-        if key == 'FILE':
-            if os.path.isfile(value) and value.endswith('.dat'):
-                self.main.load_dat_file(value)
-                return 'FILE:Done!'
-            else:
-                return 'FILE:Error file path.'
-        elif key == 'AXES':
+        cmd = msg.split(';')
+        msg_return = ''
+        for i in cmd:
             try:
-                x_ind,y_ind,z_ind = map(int,value.split(','))
+                key,value = i.split(':',1)
+                if key == 'FILE':
+                    if os.path.isfile(value):
+                        self.main.load_dat_file(value)
+                        msg_return += 'FILE:Done!;'
+                    else:
+                        msg_return += 'FILE:Error file path;'
+                elif key == 'AXES':
+                    try:
+                        x_ind,y_ind,z_ind = map(int,value.split(','))
+                    except:
+                        msg_return += 'AXES:Index error;'
+                    self.main.cb_x.setCurrentIndex(x_ind)
+                    self.main.cb_y.setCurrentIndex(y_ind)
+                    self.main.cb_z.setCurrentIndex(z_ind)
+                    self.main.on_data_change()
+                    msg_return += 'AXES:Done!;'
+                elif key == 'SHOW':
+                    self.main.showMinimized()
+                    self.main.activateWindow()
+                    self.main.showNormal()
+                    msg_return += 'SHOW:Done!;'
+                elif key == 'REFR':
+                    if self.main.filename == value:
+                        self.main.load_dat_file(value)
+                else:
+                    msg_return += 'Unknown key:%s;'%key
             except:
-                return 'AXES:Index error!'
-            self.main.cb_x.setCurrentIndex(x_ind)
-            self.main.cb_y.setCurrentIndex(y_ind)
-            self.main.cb_z.setCurrentIndex(z_ind)
-            self.main.on_data_change()
-            return 'AXES:Done!'
-        else:
-            return 'Unknown key!'
+                msg_return +=  'Unknown msg:%s;'%i
+        msg_return = 'qtplot:'+msg_return if msg_return != '' else ''
+        return msg_return
