@@ -93,8 +93,7 @@ Any .dat file not recognized as a qtlab file would be treated as a QCoDeS file.
 
 File \[NAME\].npy could be loaded only if there exists a file named \[NAME\].meta.txt in the same directory. File \[NAME\].meta.txt should contains the meta infomation with a qtlab format.
 
-The data is loaded by `np.load(self.filename, mmap_mode='r')`.
-
+The data is loaded by calling `np.load(self.filename, mmap_mode='r')`. The memory mapping mode is used, which is more efficient for realtime plotting with files created by other programs.
 
 ## How To
 
@@ -121,7 +120,13 @@ Replace 'PATH_OF_YOUR_DATA_FILE' with a real path. It will update the data file,
 	
 add a new line with `data._file.flush()` below `data.create_file()`, the meta information would then be flushed to the hard disk.
 
+
+### Real-time plotting
+
+Let's assume there is another program taking data and saving data into a .dat file every now and then. It is OK to update the plot by updating the .dat file and tell qtplot to reload that .dat file, for thousands of times. The operating system may do something to take care of file I/Os to save your disk's life. A more efficient way is to create a memory mapped .npy file and tell qtplot to load that file. Qtplot will memory-map that file too, so the data is shared between programs in memory directly.
+
 ## To Do (Maybe we could leave it as it is. No big problems...)
+
 Fix the strange behaviour when plot the second line.
 
 Speed up for realtime plotting (log, data,...)
