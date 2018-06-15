@@ -209,6 +209,7 @@ class ExportWidget(QtGui.QWidget):
     def format_label(self, s):
         conversions = {
             '<filename>': self.main.name,
+            '<operations>': self.main.operations.op_str,
             '<x>': self.main.x_name,
             '<y>': self.main.y_name,
             '<z>': self.main.data_name

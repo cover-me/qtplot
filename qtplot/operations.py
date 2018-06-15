@@ -115,6 +115,7 @@ class Operations(QtGui.QDialog):
 
         self.main = parent
         self.columns = None
+        self.op_str = ''
 
         self.init_ui()
 
@@ -309,7 +310,7 @@ class Operations(QtGui.QDialog):
 
     def apply_operations(self, data):
         copy = data.copy()
-
+        self.op_str = ''
         for i in range(self.queue.count()):
             item = self.queue.item(i)
 
@@ -339,9 +340,11 @@ class Operations(QtGui.QDialog):
                         op.set_parameter('position', self.main.canvas.line_coord)
 
             kwargs = op.get_parameters()[1]
-
-            op.func(copy, **kwargs)
-
+            self.op_str += op.name + str(kwargs.values()) if len(kwargs) else op.name
+            self.op_str += ';'
+            op.func(copy, **kwargs) 
+        if self.op_str != '':
+            self.op_str = ' ' + self.op_str.replace(' ','')
         return copy
 
     def show_window(self):

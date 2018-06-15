@@ -30,7 +30,7 @@ PROFILE_DEFAULTS = OrderedDict((
     ('y', '-'),
     ('z', '-'),
     ('colormap', 'transform\\Seismic.npy'),
-    ('title', '<filename>'),
+    ('title', '<filename><operations>'),
     ('DPI', '80'),
     ('rasterize', False),
     ('x_label', '<x>'),
@@ -604,7 +604,7 @@ class QTPlot(QtGui.QMainWindow):
     def on_load_dat(self, event):
         open_directory = self.profile_settings['open_directory']
         filename = str(QtGui.QFileDialog.getOpenFileName(directory=open_directory,
-                                                         filter='*.dat, *.npy'))
+                                                         filter='*.dat;;*.npy'))
         if filename != "":
             self.load_dat_file(filename)
 
