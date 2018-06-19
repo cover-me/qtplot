@@ -340,11 +340,9 @@ class Operations(QtGui.QDialog):
                         op.set_parameter('position', self.main.canvas.line_coord)
 
             kwargs = op.get_parameters()[1]
-            self.op_str += op.name + str(kwargs.values()) if len(kwargs) else op.name
-            self.op_str += ';'
-            op.func(copy, **kwargs) 
-        if self.op_str != '':
-            self.op_str = ' ' + self.op_str.replace(' ','')
+            _ = [i[0:3] if type(i)==str else str(i) for i in kwargs.values()]
+            self.op_str += ' %s[%s];'%(op.name,','.join(_))
+            op.func(copy, **kwargs)
         return copy
 
     def show_window(self):

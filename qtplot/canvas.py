@@ -277,10 +277,11 @@ class Canvas(scene.SceneCanvas):
         z = np.nanmean(self.data.y[index, :])
 
         x_name, y_name, data_name = self.parent.get_axis_names()
-
+        _ = self.parent.export_widget
+        title = _.format_label(str(_.le_title.text()))
         self.parent.linecut.plot_linetrace(x, y, z, row_numbers, self.line_type,
                                            self.line_coord,
-                                           self.parent.name,
+                                           title,
                                            x_name, data_name,
                                            y_name)
 
@@ -295,10 +296,11 @@ class Canvas(scene.SceneCanvas):
         z = np.nanmean(self.data.x[:, index])
 
         x_name, y_name, data_name = self.parent.get_axis_names()
-
+        _ = self.parent.export_widget
+        title = _.format_label(str(_.le_title.text()))
         self.parent.linecut.plot_linetrace(x, y, z, row_numbers, self.line_type,
                                            self.line_coord,
-                                           self.parent.name,
+                                           title,
                                            y_name, data_name,
                                            x_name)
 
