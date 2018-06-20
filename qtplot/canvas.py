@@ -274,7 +274,7 @@ class Canvas(scene.SceneCanvas):
 
         # Get the data row
         x, y, row_numbers, index = self.data.get_row_at(y)
-        z = np.nanmean(self.data.y[index, :])
+        z = eng_format(np.nanmean(self.data.y[index, :]),1)
 
         x_name, y_name, data_name = self.parent.get_axis_names()
         _ = self.parent.export_widget
@@ -293,7 +293,7 @@ class Canvas(scene.SceneCanvas):
 
         # Get the data column
         x, y, row_numbers, index = self.data.get_column_at(x)
-        z = np.nanmean(self.data.x[:, index])
+        z = eng_format(np.nanmean(self.data.x[:, index]),1)
 
         x_name, y_name, data_name = self.parent.get_axis_names()
         _ = self.parent.export_widget
@@ -318,6 +318,7 @@ class Canvas(scene.SceneCanvas):
             x_start, y_start = self.mouse_start
             x_points = np.linspace(x_start, x, 500)
             y_points = np.linspace(y_start, y, 500)
+            z = '[%s,%s]->[%s,%s]'%(eng_format(x_start,1),eng_format(y_start,1),eng_format(x,1),eng_format(y,1))
 
             if self.data_changed:
                 self.data.generate_triangulation()
@@ -329,13 +330,14 @@ class Canvas(scene.SceneCanvas):
             dist = np.hypot(x_points - x_points[0], y_points - y_points[0])
 
             x_name, y_name, data_name = self.parent.get_axis_names()
-
-            self.parent.linecut.plot_linetrace(dist, vals, 0, None,
+            _ = self.parent.export_widget
+            title = _.format_label(str(_.le_title.text()))
+            self.parent.linecut.plot_linetrace(dist, vals, z, None,
                                                self.line_type,
                                                self.line_coord,
-                                               self.parent.name,
+                                               title,
                                                'Distance (-)',
-                                               data_name, x_name)
+                                               data_name, '[%s,%s]'%(x_name,y_name))
 
             # Display slope and inverse slope in status bar
             dx = x - x_start

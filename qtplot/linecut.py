@@ -330,7 +330,7 @@ class Linecut(QtGui.QDialog):
         self.x, self.y, self.z = x, y, z
 
         if self.cb_include_z.checkState() == QtCore.Qt.Checked:
-            title = '{0} {1}={2}'.format(title, otherlabel, eng_format(z, 1))
+            title = '{0} {1}={2}'.format(title, otherlabel, z)
 
         title = '\n'.join(textwrap.wrap(title, 60, replace_whitespace=False))
         self.ax.set_title(title)
