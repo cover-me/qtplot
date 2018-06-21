@@ -348,6 +348,26 @@ class Canvas(scene.SceneCanvas):
 
     def on_mouse_press(self, event):
         self.draw_linecut(event, initial_press=True)
+    
+    def on_key_press(self,event):
+        if event.key=='Left':
+            self.loadNext(self.parent.abs_filename,-1)
+        elif event.key=='Right':
+            self.loadNext(self.parent.abs_filename)
+            
+    def loadNext(self,currentFilePath,inc=1):
+        if currentFilePath and currentFilePath.endswith('.dat'):
+            _ = currentFilePath[:-4]
+            for i in range(len(_)-1,-1,-1):
+                if not _[i:].isdigit():
+                    break
+            if i == 0:
+                i = -1
+            if i != len(_)-1:
+                fileCount = int(_[i+1:])+inc
+                _ = _[:i+1]+str(fileCount)+'.dat'
+                if os.path.isfile(_):
+                    self.parent.load_dat_file(_)
 
     def on_mouse_move(self, event):
         if self.data is not None:
