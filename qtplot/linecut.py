@@ -20,16 +20,15 @@ class Linetrace(plt.Line2D):
 
     x/y:        Arrays containing x and y data
     type:       Type of linetrace, 'horizontal' or 'vertical'
-    position:   The x/y coordinate at which the linetrace was taken
+    traceLabel:   label containing infomation of the file name and the x/y coordinate at which the linetrace was taken
     """
 
-    def __init__(self, x, y, row_numbers, type, position, **kwargs):
-        plt.Line2D.__init__(self, x, y, **kwargs)
+    def __init__(self, x, y, row_numbers, type, traceLabel, **kwargs):
+        plt.Line2D.__init__(self, x, y, label=traceLabel,  **kwargs)
 
         self.row_numbers = row_numbers
         self.type = type
-        self.position = position
-
+        self.traceLabel = traceLabel
 
 class Linecut(QtGui.QDialog):
     def __init__(self, main=None):
@@ -41,7 +40,8 @@ class Linecut(QtGui.QDialog):
         self.x, self.y = None, None
         self.linetraces = []
         self.marker = None
-        self.colors = cycle('bgrcmykw')
+        self.colors = None
+        self.singleLine = True
 
         self.ax.xaxis.set_major_formatter(FixedOrderFormatter())
         self.ax.yaxis.set_major_formatter(FixedOrderFormatter())
@@ -314,6 +314,10 @@ class Linecut(QtGui.QDialog):
     def on_clear_lines(self):
         for line in self.linetraces:
             line.remove()
+        _ = self.ax.legend_
+        if _:
+            _.remove()
+        self.singleLine = True
 
         self.linetraces = []
 
@@ -330,23 +334,28 @@ class Linecut(QtGui.QDialog):
         self.x, self.y, self.z = x, y, z
 
         if self.cb_include_z.checkState() == QtCore.Qt.Checked:
-            title = '{0} {1}={2}'.format(title, otherlabel, z)
+            title = '{0} {1}={2}'.format(title, otherlabel, z) if (otherlabel or z!='0') else title
 
         title = '\n'.join(textwrap.wrap(title, 60, replace_whitespace=False))
         self.ax.set_title(title)
 
         self.ax.set_xlabel(xlabel)
         self.ax.set_ylabel(ylabel)
+        traceLabel = self.main.name.replace('.dat',' ')
+        traceLabel += z if (otherlabel or z!='0') else ''
 
         # Remove all the existing lines and only plot one if we uncheck
         # the incremental box. Else, add a new line to the collection
         if self.cb_incremental.checkState() == QtCore.Qt.Unchecked:
+            if self.singleLine == False:
+                self.ax.legend_.remove()
+                self.singleLine = True
             for line in self.linetraces:
                 line.remove()
 
             self.linetraces = []
 
-            line = Linetrace(x, y, row_numbers, type, position,
+            line = Linetrace(x, y, row_numbers, type, traceLabel,
                              color='red',
                              picker=5,
                              **self.get_line_kwargs())
@@ -357,17 +366,23 @@ class Linecut(QtGui.QDialog):
             self.total_offset = 0
         else:
             if len(self.ax.lines) > 0:
-                if self.linetraces[-1].position == position:
+                if self.linetraces[-1].traceLabel == traceLabel:
                     return
+            if self.singleLine:
+                self.colors = cycle('rbgcmykw')
+                if len(self.ax.lines) == 1:
+                    next(self.colors)
+                self.singleLine = False
 
             index = len(self.linetraces) - 1
 
             offset = float(self.le_offset.text())
-            line = Linetrace(x, y + index * offset, row_numbers, type, position)
+            line = Linetrace(x, y + index * offset, row_numbers, type, traceLabel)
             line.set_color(next(self.colors))
 
             self.linetraces.append(line)
             self.ax.add_line(line)
+            self.ax.legend(loc=0)
 
         if self.cb_reset_cmap.checkState() == QtCore.Qt.Checked:
             x, y = np.ma.masked_invalid(x), np.ma.masked_invalid(y)
