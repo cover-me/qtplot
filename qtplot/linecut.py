@@ -29,6 +29,21 @@ class Linetrace(plt.Line2D):
         self.row_numbers = row_numbers
         self.type = type
         self.traceLabel = traceLabel
+class LineColors():
+    def __init__(self,c_list):
+        self.c_list = c_list
+        self.index = 0
+    def get_next(self):
+        self.index += 1
+        if self.index == len(self.c_list):
+            self.index = 0
+        return self.c_list[self.index]
+    def dec_index(self):
+        self.index -= 1
+        if self.index == -1:
+            self.index = len(self.c_list) - 1
+    def set_index(self,i):
+        self.index = i
 
 class Linecut(QtGui.QDialog):
     def __init__(self, main=None):
@@ -40,7 +55,7 @@ class Linecut(QtGui.QDialog):
         self.x, self.y = None, None
         self.linetraces = []
         self.marker = None
-        self.colors = None
+        self.colors = LineColors('rbgcmyk')
         self.singleLine = True
 
         self.ax.xaxis.set_major_formatter(FixedOrderFormatter())
@@ -96,6 +111,10 @@ class Linecut(QtGui.QDialog):
         self.cb_incremental = QtGui.QCheckBox('Incremental')
         self.cb_incremental.setCheckState(QtCore.Qt.Unchecked)
         hbox_linecuts.addWidget(self.cb_incremental)
+        
+        self.cb_showLegend = QtGui.QCheckBox('Legend')
+        self.cb_showLegend.setCheckState(QtCore.Qt.Checked)
+        hbox_linecuts.addWidget(self.cb_showLegend)
 
         hbox_linecuts.addWidget(QtGui.QLabel('Offset:'))
 
@@ -365,24 +384,29 @@ class Linecut(QtGui.QDialog):
 
             self.total_offset = 0
         else:
-            if len(self.ax.lines) > 0:
-                if self.linetraces[-1].traceLabel == traceLabel:
-                    return
             if self.singleLine:
-                self.colors = cycle('rbgcmykw')
-                if len(self.ax.lines) == 1:
-                    next(self.colors)
+                self.colors.set_index(0 if len(self.ax.lines) == 1 else -1)
                 self.singleLine = False
+            if len(self.ax.lines) > 0:
+                if self.linetraces[-1].traceLabel == traceLabel or self.linetraces[-1].traceLabel.endswith('.npy'):
+                    self.linetraces[-1].remove()
+                    del self.linetraces[-1]
+                    self.colors.dec_index()
 
             index = len(self.linetraces) - 1
 
             offset = float(self.le_offset.text())
-            line = Linetrace(x, y + index * offset, row_numbers, type, traceLabel)
-            line.set_color(next(self.colors))
-
+            line = Linetrace(x, y + index * offset, row_numbers, type, traceLabel,
+                                color = self.colors.get_next(),
+                                **self.get_line_kwargs())
             self.linetraces.append(line)
+            x1,x2 = self.ax.get_xlim()
+            y1,y2 = self.ax.get_ylim()
             self.ax.add_line(line)
-            self.ax.legend(loc=0)
+            if self.cb_showLegend.checkState()== QtCore.Qt.Checked:
+                self.ax.legend(loc=0)
+            else:
+                self.ax.legend().set_visible(False)
 
         if self.cb_reset_cmap.checkState() == QtCore.Qt.Checked:
             x, y = np.ma.masked_invalid(x), np.ma.masked_invalid(y)
@@ -391,9 +415,11 @@ class Linecut(QtGui.QDialog):
 
             xdiff = (maxx - minx) * .05
             ydiff = (maxy - miny) * .05
-
-            self.ax.axis([minx - xdiff, maxx + xdiff,
-                          miny - ydiff, maxy + ydiff])
+            
+            if  self.cb_incremental.checkState() == QtCore.Qt.Checked and len(self.ax.lines) > 1:
+                self.ax.axis([min(minx - xdiff,x1), max(maxx + xdiff,x2), min(miny - ydiff,y1), max(maxy + ydiff,y2)])
+            else:
+                self.ax.axis([minx - xdiff, maxx + xdiff, miny - ydiff, maxy + ydiff])
 
         self.ax.set_aspect('auto')
         self.fig.tight_layout()
