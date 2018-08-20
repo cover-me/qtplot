@@ -937,3 +937,16 @@ class Data2D:
             self.z = (self.z[2:] - self.z[:-2]) / (self.y[2:] - self.y[:-2])
             self.x = self.x[1:-1]
             self.y = self.y[1:-1]
+            
+    def R_in_R2(self, a_I, a_V, Rin):
+        """z = (z*Amp-Rin)/12906.4, Amp = a_V/a_I"""
+        R2 = 12906.4#ohm, h/2e^2
+        Amp = a_V/a_I
+        self.z = (self.z*Amp-Rin)/R2
+    
+    def G_in_G2(self, a_I, a_V, Rin):
+        """z = z*Amp/(1-(z*Amp*Rin))/7.74809e-5, Amp = a_I/a_V"""
+        G2 = 7.74809e-5#ohm^-1, 2e^2/h
+        Amp = a_I/a_V
+        self.z = self.z*Amp
+        self.z = self.z/(1-(self.z*Rin))/G2
