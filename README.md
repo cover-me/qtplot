@@ -24,16 +24,16 @@ WinPython is a free open-source portable distribution of Python.
 
 Download WinPython-32bit-2.7.9.5 installer and run it. The installer only copies files to a destination directory.
  
-Open "WinPython Command Prompt.exe" in the destination directory. Type "pip install qtplot". Some of you packages may be auto degraded/updated to meet the requirement of qtplot.
+Open "WinPython Command Prompt.exe" in the destination directory. Type "pip install qtplot". Some of your packages may be auto degraded/updated to meet the requirement of qtplot.
 
 Find qtplot.exe in folder \python-2.7.9\Scripts.
 
 ### Freezes (packages) qtplot with PyInstaller
 With PyInstaller, you can package qtplot into a small and portable folder with an executable inside.
 
-Make sure your python meets the requirements of qtplot.
+Make sure your python meets the requirements of qtplot (by installing it with the methods above...).
 
-Download the whole project and created a .py file in the project folder, with the following codes:
+Download the whole project and create a .py file in the project folder, with the following codes:
 	
 	from qtplot import qtplot
 	qtplot.main()
@@ -81,9 +81,9 @@ If a file has an extension of .dat and starts with "# Filename: " in its first l
 	0.000000000000e+00	0	0	0
 	2.000000000000e+01	0	0	0
 
-Lines start with a "#" ara comment lines containing meta information.
+Lines start with a "#" are comment lines containing meta information.
 
-The rest are data. Data is obtained with a N-dimensional scan. Each dimension corresponds to a coordinate column (a column with a type of "coordinate"). For example, if one scans V_bias and V_gate, the setting values of V_bias and V_gate would be the coordinate columns. This program uses coordinate columns to determine how points of each line in data are arranged to plot a 2d figure.
+The rest is data. Data is obtained by a N-dimensional scan. Each dimension of the scan corresponds to a coordinate column in the data (a column with a "type" of "coordinate"). For example, if one scans V_bias and V_gate, the setting values of V_bias and V_gate would be the coordinate columns. This program uses coordinate columns to determine how points of each line in data are arranged to plot a 2d figure.
 
 ### .dat file (QCoDeS)
 
@@ -125,7 +125,7 @@ add a new line with `data._file.flush()` below `data.create_file()`, the meta in
 
 Let's assume there is another program taking data and saving data into a .dat file every now and then. It is OK to update the plot by updating the .dat file and tell qtplot to reload that .dat file, for thousands of times. The operating system may do something to take care of file I/Os to save your disk's life. A more efficient way is to create a memory mapped .npy file and tell qtplot to load that file. Qtplot will memory-map that file too, so the data is shared between programs in memory directly.
 
-## To Do (Maybe we could leave it as it is. No big problems...)
+## To Do (Maybe we could leave it as it is. Not big problems...)
 
 Fix the strange behaviour when plot the second line.
 
