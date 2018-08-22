@@ -1,4 +1,14 @@
 ![alt tag](screenshot.png)
+The screenshot is from forked project.
+## Introduction
+
+This is a project forked from Rubenknex/qtplot. The original one is already a very powerful program to plot 1d and 2d data. I did a little modification: 
+
+* Add a tcp server that can be talked by external programs, making it possible to show real-time diagrams automatically.
+* Add some features that the plotting program Spyview has: left and right hot keys to toggle between data files; Show filter information on the diagrams.
+* Other features: Improve the "incremental" mode for better hystersis diagrams with multiple data files; Add filters that subtract Rin and normalized to quantuam conductance/resistance.
+* ...
+
 
 ## Installation
 
