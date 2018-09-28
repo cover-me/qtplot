@@ -274,7 +274,7 @@ class Canvas(scene.SceneCanvas):
 
         # Get the data row
         x, y, row_numbers, index = self.data.get_row_at(y)
-        z = eng_format(np.nanmean(self.data.y[index, :]),1)
+        z = '%.3e'%np.nanmean(self.data.y[index, :])
 
         x_name, y_name, data_name = self.parent.get_axis_names()
         _ = self.parent.export_widget
@@ -293,7 +293,7 @@ class Canvas(scene.SceneCanvas):
 
         # Get the data column
         x, y, row_numbers, index = self.data.get_column_at(x)
-        z = eng_format(np.nanmean(self.data.x[:, index]),1)
+        z = '%.3e'%np.nanmean(self.data.x[:, index])
 
         x_name, y_name, data_name = self.parent.get_axis_names()
         _ = self.parent.export_widget
@@ -318,7 +318,7 @@ class Canvas(scene.SceneCanvas):
             x_start, y_start = self.mouse_start
             x_points = np.linspace(x_start, x, 500)
             y_points = np.linspace(y_start, y, 500)
-            z = '[%s,%s]->[%s,%s]'%(eng_format(x_start,1),eng_format(y_start,1),eng_format(x,1),eng_format(y,1))
+            z = '[%.3e,%.3e]->[%.3e,%.3e]'%(x_start,y_start,x,y)
 
             if self.data_changed:
                 self.data.generate_triangulation()
@@ -380,8 +380,7 @@ class Canvas(scene.SceneCanvas):
 
                 if not np.isnan(x) and not np.isnan(y):
                     # Show the coordinates in the statusbar
-                    text = 'X: %s\tY: %s' % (eng_format(x, 1),
-                                             eng_format(y, 1))
+                    text = 'X: %.3e\tY: %.3e' % (x,y)
                     self.parent.l_position.setText(text)
 
                     # If a mouse button was pressed, try to redraw linecut
