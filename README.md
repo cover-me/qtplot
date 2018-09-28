@@ -6,7 +6,7 @@ This is a project forked from Rubenknex/qtplot. The original one is already a ve
 
 * Add a tcp server that can be talked by external programs, making it possible to show real-time diagrams automatically.
 * Add some features that the plotting program Spyview has: left and right hot keys to toggle between data files; Show filter information on the diagrams.
-* Other features: Improve the "incremental" mode for better hystersis diagrams with multiple lines; Add filters that subtract Rin and normalize R/G to quantuam conductance/resistance respectively; Show multiple 2D graphs in a signle canvas.
+* Other features: Improve the "incremental" mode for better hystersis diagrams with multiple lines; Add filters that subtract Rin and normalize G/R to quantuam conductance/resistance respectively; Show multiple 2D graphs in a signle canvas.
 * ...
 
 
