@@ -281,7 +281,7 @@ class ExportWidget(QtGui.QWidget):
             self.ax.axis('tight')
 
             title = self.format_label(str(self.le_title.text()))
-            title += '' if len(self.filenames)<2 else  (' & ' + ' '.join(self.filenames[1:]))
+            title += '' if len(self.filenames)<2 else  (' & ' + ' '.join(self.filenames[:-1]))
             title = '\n'.join(textwrap.wrap(title, 40, replace_whitespace=False))
             # Set all the plot labels
             self.ax.set_title(title)
