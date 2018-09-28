@@ -38,7 +38,7 @@ Open "WinPython Command Prompt.exe" in the destination directory. Type "pip inst
 
 Find qtplot.exe in folder \python-2.7.9\Scripts.
 
-### Freezes (packages) qtplot with PyInstaller
+### Create a portable version of qtplot with PyInstaller
 With PyInstaller, you can package qtplot into a small and portable folder with an executable inside.
 
 Make sure your python meets the requirements of qtplot (by installing it with the methods above...).

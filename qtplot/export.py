@@ -22,6 +22,7 @@ class ExportWidget(QtGui.QWidget):
         self.main = main
 
         self.fig, self.ax = plt.subplots()
+        self.filenames = []
         self.cb = None
 
         self.init_ui()
@@ -66,6 +67,11 @@ class ExportWidget(QtGui.QWidget):
         grid_general.addWidget(QtGui.QLabel('Rasterize'), 1, 5)
         self.cb_rasterize = QtGui.QCheckBox('')
         grid_general.addWidget(self.cb_rasterize, 1, 6)
+
+        grid_general.addWidget(QtGui.QLabel('Hold'), 1, 7)
+        self.cb_hold = QtGui.QCheckBox('')
+        grid_general.addWidget(self.cb_hold, 1, 8)
+        self.cb_hold.setCheckState(QtCore.Qt.Unchecked)
 
         grid = QtGui.QGridLayout()
 
@@ -177,7 +183,7 @@ class ExportWidget(QtGui.QWidget):
         self.le_title.setText(profile['title'])
         self.le_dpi.setText(profile['DPI'])
         self.cb_rasterize.setChecked(bool(profile['rasterize']))
-
+        
         self.le_x_label.setText(profile['x_label'])
         self.le_y_label.setText(profile['y_label'])
         self.le_z_label.setText(profile['z_label'])
@@ -231,8 +237,10 @@ class ExportWidget(QtGui.QWidget):
             mpl.rc('font', **font)
 
             # Clear the plot
-            self.ax.clear()
-
+            if self.cb_hold.checkState() == QtCore.Qt.Unchecked:
+                self.filenames = []
+                self.ax.clear()
+            self.filenames.append(os.path.splitext(self.format_label('<filename>'))[0])
             # Get the data and colormap
             x, y, z = self.main.data.get_pcolor()
             cmap = self.main.canvas.colormap.get_mpl_colormap()
@@ -273,9 +281,8 @@ class ExportWidget(QtGui.QWidget):
             self.ax.axis('tight')
 
             title = self.format_label(str(self.le_title.text()))
-            title = '\n'.join(textwrap.wrap(title, 40,
-                                            replace_whitespace=False))
-
+            title += '' if len(self.filenames)<2 else  (' & ' + ' '.join(self.filenames[:-1]))
+            title = '\n'.join(textwrap.wrap(title, 40, replace_whitespace=False))
             # Set all the plot labels
             self.ax.set_title(title)
             self.ax.set_xlabel(self.format_label(self.le_x_label.text()))
