@@ -158,29 +158,38 @@ class QTPlot(QtGui.QMainWindow):
         self.main_widget.addTab(self.export_widget, 'Export')
 
         self.canvas = Canvas(self)
-
-        # Top row buttons
+        
+        # path
         hbox = QtGui.QHBoxLayout()
-
+        
+        lbl_folder = QtGui.QLabel('Path:')
+        hbox.addWidget(lbl_folder)
+        
+        self.le_path = QtGui.QLineEdit(self)
+        hbox.addWidget(self.le_path)
+        
+        # Top row buttons
+        hbox2 = QtGui.QHBoxLayout()
+        
         self.b_load = QtGui.QPushButton('Load...')
         self.b_load.clicked.connect(self.on_load_dat)
-        hbox.addWidget(self.b_load)
+        hbox2.addWidget(self.b_load)
 
         self.b_refresh = QtGui.QPushButton('Refresh')
         self.b_refresh.clicked.connect(self.on_refresh)
-        hbox.addWidget(self.b_refresh)
-
+        hbox2.addWidget(self.b_refresh)
+        
         self.b_swap_axes = QtGui.QPushButton('Swap axes', self)
         self.b_swap_axes.clicked.connect(self.on_swap_axes)
-        hbox.addWidget(self.b_swap_axes)
+        hbox2.addWidget(self.b_swap_axes)
 
         self.b_linecut = QtGui.QPushButton('Linecut')
         self.b_linecut.clicked.connect(self.linecut.show_window)
-        hbox.addWidget(self.b_linecut)
+        hbox2.addWidget(self.b_linecut)
 
         self.b_operations = QtGui.QPushButton('Operations')
         self.b_operations.clicked.connect(self.operations.show_window)
-        hbox.addWidget(self.b_operations)
+        hbox2.addWidget(self.b_operations)
 
         # Subtracting series R
         r_hbox = QtGui.QHBoxLayout()
@@ -250,9 +259,6 @@ class QTPlot(QtGui.QMainWindow):
         self.combo_boxes = [self.cb_v, self.cb_i,
                             self.cb_x, self.cb_y, self.cb_z]
 
-        groupbox = QtGui.QGroupBox('Data selection')
-        groupbox.setLayout(grid)
-
         # Colormap
         vbox_gamma = QtGui.QVBoxLayout()
         hbox_gamma1 = QtGui.QHBoxLayout()
@@ -302,6 +308,12 @@ class QTPlot(QtGui.QMainWindow):
         self.s_min.sliderMoved.connect(self.on_min_changed)
         hbox_gamma2.addWidget(self.s_min)
 
+        # Gamma text box
+        self.le_gamma = QtGui.QLineEdit(self)
+        self.le_gamma.setMaximumWidth(100)
+        self.le_gamma.returnPressed.connect(self.on_le_gamma_entered)
+        hbox_gamma2.addWidget(self.le_gamma)
+        
         # Colormap gamma slider
         self.s_gamma = QtGui.QSlider(QtCore.Qt.Horizontal)
         self.s_gamma.setMinimum(-100)
@@ -310,6 +322,12 @@ class QTPlot(QtGui.QMainWindow):
         self.s_gamma.valueChanged.connect(self.on_gamma_changed)
         hbox_gamma2.addWidget(self.s_gamma)
 
+        # Colormap maximum text box
+        self.le_max = QtGui.QLineEdit(self)
+        self.le_max.setMaximumWidth(100)
+        self.le_max.returnPressed.connect(self.on_min_max_entered)
+        hbox_gamma2.addWidget(self.le_max)
+
         # Colormap maximum slider
         self.s_max = QtGui.QSlider(QtCore.Qt.Horizontal)
         self.s_max.setMaximum(100)
@@ -317,18 +335,10 @@ class QTPlot(QtGui.QMainWindow):
         self.s_max.sliderMoved.connect(self.on_max_changed)
         hbox_gamma2.addWidget(self.s_max)
 
-        # Colormap maximum text box
-        self.le_max = QtGui.QLineEdit(self)
-        self.le_max.setMaximumWidth(100)
-        self.le_max.returnPressed.connect(self.on_min_max_entered)
-        hbox_gamma2.addWidget(self.le_max)
 
         self.b_reset = QtGui.QPushButton('Reset')
         self.b_reset.clicked.connect(self.on_cm_reset)
         hbox_gamma1.addWidget(self.b_reset)
-
-        groupbox_gamma = QtGui.QGroupBox('Colormap')
-        groupbox_gamma.setLayout(vbox_gamma)
 
         # Bottom row buttons
         hbox4 = QtGui.QHBoxLayout()
@@ -345,9 +355,10 @@ class QTPlot(QtGui.QMainWindow):
         vbox = QtGui.QVBoxLayout(self.view_widget)
         vbox.addWidget(self.canvas.native)
         vbox.addLayout(hbox)
+        vbox.addLayout(hbox2)
         vbox.addLayout(r_hbox)
-        vbox.addWidget(groupbox)
-        vbox.addWidget(groupbox_gamma)
+        vbox.addLayout(grid)
+        vbox.addLayout(vbox_gamma)
         vbox.addLayout(hbox4)
 
         self.status_bar = QtGui.QStatusBar()
@@ -605,10 +616,12 @@ class QTPlot(QtGui.QMainWindow):
         open_directory = self.profile_settings['open_directory']
         filename = str(QtGui.QFileDialog.getOpenFileName(directory=open_directory,
                                                          filter='*.dat;;*.npy'))
+        self.le_path.setText(filename)
         if filename != "":
             self.load_dat_file(filename)
 
     def on_refresh(self, event):
+        self.filename = str(self.le_path.text()).strip()
         if self.filename:
             self.load_dat_file(self.filename)
 
@@ -679,7 +692,7 @@ class QTPlot(QtGui.QMainWindow):
             cm.min, cm.max = newmin, newmax
 
             self.canvas.update()
-
+    
     def on_min_changed(self, value):
         if self.data is not None:
             min, max = np.nanmin(self.data.z), np.nanmax(self.data.z)
@@ -690,10 +703,16 @@ class QTPlot(QtGui.QMainWindow):
             self.canvas.colormap.min = newmin
             self.canvas.update()
 
+    def on_le_gamma_entered(self):
+        newgamma = float(self.le_gamma.text())
+        if newgamma != self.s_gamma.value():
+            self.s_gamma.setValue(newgamma)
+            self.on_gamma_changed(newgamma)
+
     def on_gamma_changed(self, value):
+        self.le_gamma.setText('%.1f'% value)
         if self.data is not None:
             gamma = 10.0**(value / 100.0)
-
             self.canvas.colormap.gamma = gamma
             self.canvas.update()
 
@@ -746,6 +765,7 @@ class QTPlot(QtGui.QMainWindow):
 
     def dropEvent(self, event):
         filepath = str(event.mimeData().urls()[0].toLocalFile())
+        self.le_path.setText(filepath)
         self.load_dat_file(filepath)
 
     def closeEvent(self, event):
