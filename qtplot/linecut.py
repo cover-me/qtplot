@@ -388,7 +388,7 @@ class Linecut(QtGui.QDialog):
                 self.colors.set_index(0 if len(self.ax.lines) == 1 else -1)
                 self.singleLine = False
             if len(self.ax.lines) > 0:
-                if self.linetraces[-1].traceLabel == traceLabel or self.linetraces[-1].traceLabel.endswith('.npy'):
+                if self.linetraces[-1].traceLabel == traceLabel or self.linetraces[-1].traceLabel.split()[0].endswith('.npy'):
                     self.linetraces[-1].remove()
                     del self.linetraces[-1]
                     self.colors.dec_index()
