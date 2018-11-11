@@ -136,6 +136,7 @@ class Settings(QtGui.QDialog):
         self.le_save_directory.setText(self.main.profile_settings['save_directory'])
 
     def fill_tree(self):
+        self.tree.clear()#always clear old braches
         if self.main.dat_file is not None:
             settings = self.main.dat_file.qtlab_settings
             widgets = []
