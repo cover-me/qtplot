@@ -57,6 +57,27 @@ Replace [directory] with the path of your qtplot project folder.
 
 Sometimes the excutable may fail to run on a computer because of missing init.tcl and .tk files. Click [here](https://stackoverflow.com/questions/42180492/pyinstaller-fails-on-windows-7-cant-find-a-usable-init-tcl) for a solution (I prefer copying the missing file manually).
 
+### Run the codes directly
+Make sure your python meets the requirements of qtplot (by installing it with the methods above...).
+
+I use WinPython-32bit-2.7.9.5. So I open "WinPython Command Prompt.exe" and execute:
+
+	cd [directory]
+	python
+	from qtplot import qtplot
+	qtplot.main()
+	
+[directory] is the path of qtplot folder.
+
+or create a .py file in the project folder with the following codes:
+	
+	from qtplot import qtplot
+	qtplot.main()
+
+open "WinPython Command Prompt.exe" and execute:
+
+	python [path of the .py file]
+
 ## Data file
 
 ### .dat file (qtlab)
