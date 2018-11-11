@@ -52,7 +52,7 @@ class ExportWidget(QtGui.QWidget):
         self.b_export = QtGui.QPushButton('Export...', self)
         self.b_export.clicked.connect(self.on_export)
         hbox.addWidget(self.b_export)
-
+        
         grid_general = QtGui.QGridLayout()
 
         grid_general.addWidget(QtGui.QLabel('Title'), 1, 1)
@@ -120,62 +120,68 @@ class ExportWidget(QtGui.QWidget):
         self.le_z_div.setMaximumWidth(50)
         grid.addWidget(self.le_z_div, 4, 6)
 
-        groupbox_labels = QtGui.QGroupBox('Labels')
-        groupbox_labels.setLayout(grid)
-
-        grid = QtGui.QGridLayout()
+        grid2 = QtGui.QGridLayout()
 
         # Font
-        grid.addWidget(QtGui.QLabel('Font'), 5, 1)
+        grid2.addWidget(QtGui.QLabel('Font'), 5, 1)
         self.le_font = QtGui.QLineEdit('Vera Sans')
-        grid.addWidget(self.le_font, 5, 2)
+        grid2.addWidget(self.le_font, 5, 2)
 
-        grid.addWidget(QtGui.QLabel('Font size'), 6, 1)
+        grid2.addWidget(QtGui.QLabel('Font size'), 6, 1)
         self.le_font_size = QtGui.QLineEdit('12')
-        grid.addWidget(self.le_font_size, 6, 2)
+        grid2.addWidget(self.le_font_size, 6, 2)
 
         # Figure size
-        grid.addWidget(QtGui.QLabel('Width'), 5, 3)
+        grid2.addWidget(QtGui.QLabel('Width'), 5, 3)
         self.le_width = QtGui.QLineEdit('3')
-        grid.addWidget(self.le_width, 5, 4)
+        grid2.addWidget(self.le_width, 5, 4)
 
-        grid.addWidget(QtGui.QLabel('Height'), 6, 3)
+        grid2.addWidget(QtGui.QLabel('Height'), 6, 3)
         self.le_height = QtGui.QLineEdit('3')
-        grid.addWidget(self.le_height, 6, 4)
+        grid2.addWidget(self.le_height, 6, 4)
 
         # Colorbar
-        grid.addWidget(QtGui.QLabel('CB Orient'), 5, 5)
+        grid2.addWidget(QtGui.QLabel('CB Orient'), 5, 5)
         self.cb_cb_orient = QtGui.QComboBox()
         self.cb_cb_orient.addItems(['vertical', 'horizontal'])
-        grid.addWidget(self.cb_cb_orient, 5, 6)
+        grid2.addWidget(self.cb_cb_orient, 5, 6)
 
-        grid.addWidget(QtGui.QLabel('CB Pos'), 6, 5)
+        grid2.addWidget(QtGui.QLabel('CB Pos'), 6, 5)
         self.le_cb_pos = QtGui.QLineEdit('0 0 1 1')
-        grid.addWidget(self.le_cb_pos, 6, 6)
-
-        groupbox_figure = QtGui.QGroupBox('Figure')
-        groupbox_figure.setLayout(grid)
+        grid2.addWidget(self.le_cb_pos, 6, 6)
 
         # Additional things to plot
-        grid.addWidget(QtGui.QLabel('Triangulation'), 7, 1)
+        grid2.addWidget(QtGui.QLabel('Triangulation'), 7, 1)
         self.cb_triangulation = QtGui.QCheckBox('')
-        grid.addWidget(self.cb_triangulation, 7, 2)
+        grid2.addWidget(self.cb_triangulation, 7, 2)
 
-        grid.addWidget(QtGui.QLabel('Tripcolor'), 7, 3)
+        grid2.addWidget(QtGui.QLabel('Tripcolor'), 7, 3)
         self.cb_tripcolor = QtGui.QCheckBox('')
-        grid.addWidget(self.cb_tripcolor, 7, 4)
+        grid2.addWidget(self.cb_tripcolor, 7, 4)
 
-        grid.addWidget(QtGui.QLabel('Linecut'), 7, 5)
+        grid2.addWidget(QtGui.QLabel('Linecut'), 7, 5)
         self.cb_linecut = QtGui.QCheckBox('')
-        grid.addWidget(self.cb_linecut, 7, 6)
+        grid2.addWidget(self.cb_linecut, 7, 6)
+        
+        grid3 = QtGui.QGridLayout()
+        
+        # Advance tools
+        grid3.addWidget(QtGui.QLabel('Cmd'), 8, 1)
+        self.le_cmd = QtGui.QLineEdit('')
+        grid3.addWidget(self.le_cmd, 8, 2)        
 
+        self.b_add_pt = QtGui.QPushButton('Run', self)
+        self.b_add_pt.clicked.connect(self.on_add_pt)
+        grid3.addWidget(self.b_add_pt, 8, 3)
+ 
         vbox = QtGui.QVBoxLayout(self)
         vbox.addWidget(self.toolbar)
         vbox.addWidget(self.canvas)
         vbox.addLayout(hbox)
         vbox.addLayout(grid_general)
-        vbox.addWidget(groupbox_labels)
-        vbox.addWidget(groupbox_figure)
+        vbox.addLayout(grid)
+        vbox.addLayout(grid2)
+        vbox.addLayout(grid3)
 
     def populate_ui(self):
         profile = self.main.profile_settings
@@ -399,3 +405,6 @@ class ExportWidget(QtGui.QWidget):
             self.fig.set_size_inches(previous_size)
 
             self.canvas.draw()
+    def on_add_pt(self):
+        if str(self.le_cmd.text()).startswith("plt."):
+            exec(str(self.le_cmd.text()))
