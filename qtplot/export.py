@@ -52,7 +52,7 @@ class ExportWidget(QtGui.QWidget):
         self.b_export = QtGui.QPushButton('Export...', self)
         self.b_export.clicked.connect(self.on_export)
         hbox.addWidget(self.b_export)
-
+        
         grid_general = QtGui.QGridLayout()
 
         grid_general.addWidget(QtGui.QLabel('Title'), 1, 1)
@@ -120,62 +120,81 @@ class ExportWidget(QtGui.QWidget):
         self.le_z_div.setMaximumWidth(50)
         grid.addWidget(self.le_z_div, 4, 6)
 
-        groupbox_labels = QtGui.QGroupBox('Labels')
-        groupbox_labels.setLayout(grid)
-
-        grid = QtGui.QGridLayout()
+        grid2 = QtGui.QGridLayout()
 
         # Font
-        grid.addWidget(QtGui.QLabel('Font'), 5, 1)
+        grid2.addWidget(QtGui.QLabel('Font'), 5, 1)
         self.le_font = QtGui.QLineEdit('Vera Sans')
-        grid.addWidget(self.le_font, 5, 2)
+        grid2.addWidget(self.le_font, 5, 2)
 
-        grid.addWidget(QtGui.QLabel('Font size'), 6, 1)
+        grid2.addWidget(QtGui.QLabel('Font size'), 6, 1)
         self.le_font_size = QtGui.QLineEdit('12')
-        grid.addWidget(self.le_font_size, 6, 2)
+        grid2.addWidget(self.le_font_size, 6, 2)
 
         # Figure size
-        grid.addWidget(QtGui.QLabel('Width'), 5, 3)
+        grid2.addWidget(QtGui.QLabel('Width'), 5, 3)
         self.le_width = QtGui.QLineEdit('3')
-        grid.addWidget(self.le_width, 5, 4)
+        grid2.addWidget(self.le_width, 5, 4)
 
-        grid.addWidget(QtGui.QLabel('Height'), 6, 3)
+        grid2.addWidget(QtGui.QLabel('Height'), 6, 3)
         self.le_height = QtGui.QLineEdit('3')
-        grid.addWidget(self.le_height, 6, 4)
+        grid2.addWidget(self.le_height, 6, 4)
 
         # Colorbar
-        grid.addWidget(QtGui.QLabel('CB Orient'), 5, 5)
+        grid2.addWidget(QtGui.QLabel('CB Orient'), 5, 5)
         self.cb_cb_orient = QtGui.QComboBox()
         self.cb_cb_orient.addItems(['vertical', 'horizontal'])
-        grid.addWidget(self.cb_cb_orient, 5, 6)
+        grid2.addWidget(self.cb_cb_orient, 5, 6)
 
-        grid.addWidget(QtGui.QLabel('CB Pos'), 6, 5)
+        grid2.addWidget(QtGui.QLabel('CB Pos'), 6, 5)
         self.le_cb_pos = QtGui.QLineEdit('0 0 1 1')
-        grid.addWidget(self.le_cb_pos, 6, 6)
-
-        groupbox_figure = QtGui.QGroupBox('Figure')
-        groupbox_figure.setLayout(grid)
+        grid2.addWidget(self.le_cb_pos, 6, 6)
 
         # Additional things to plot
-        grid.addWidget(QtGui.QLabel('Triangulation'), 7, 1)
+        grid2.addWidget(QtGui.QLabel('Triangulation'), 7, 1)
         self.cb_triangulation = QtGui.QCheckBox('')
-        grid.addWidget(self.cb_triangulation, 7, 2)
+        grid2.addWidget(self.cb_triangulation, 7, 2)
 
-        grid.addWidget(QtGui.QLabel('Tripcolor'), 7, 3)
+        grid2.addWidget(QtGui.QLabel('Tripcolor'), 7, 3)
         self.cb_tripcolor = QtGui.QCheckBox('')
-        grid.addWidget(self.cb_tripcolor, 7, 4)
+        grid2.addWidget(self.cb_tripcolor, 7, 4)
 
-        grid.addWidget(QtGui.QLabel('Linecut'), 7, 5)
+        grid2.addWidget(QtGui.QLabel('Linecut'), 7, 5)
         self.cb_linecut = QtGui.QCheckBox('')
-        grid.addWidget(self.cb_linecut, 7, 6)
+        grid2.addWidget(self.cb_linecut, 7, 6)
+              
+        # Advance tools
+        hbox_av = QtGui.QHBoxLayout()
+        
+        lb_cmd = QtGui.QLabel('Cmd')
+        lb_cmd.setMaximumWidth(20)
+        hbox_av.addWidget(lb_cmd)
+        
+        self.cb_cmd =  QtGui.QComboBox()
+        self.cb_cmd.setEditable(True)
+        self.cb_cmd.addItem("")
+        self.cb_cmd.addItem("plt.plot([0,1],[0,0],'yellow',linewidth=2);self.canvas.draw()")
+        self.cb_cmd.addItem("plt.gca().lines[-1].remove();self.canvas.draw()")
+        self.cb_cmd.addItem("plt.autoscale(enable=True, axis='both', tight=None);self.canvas.draw()")
+        self.cb_cmd.addItem("plt.gca().set_xlim(None, None);self.canvas.draw()")
+        self.cb_cmd.addItem("plt.tight_layout();self.canvas.draw()")
+        self.cb_cmd.addItem("plt.subplots_adjust(0.125,0.1,0.9,0.9);self.canvas.draw()")
 
+        hbox_av.addWidget(self.cb_cmd)        
+
+        self.b_run = QtGui.QPushButton('Run', self)
+        self.b_run.setMaximumWidth(60)
+        self.b_run.clicked.connect(self.on_run)
+        hbox_av.addWidget(self.b_run)
+ 
         vbox = QtGui.QVBoxLayout(self)
         vbox.addWidget(self.toolbar)
         vbox.addWidget(self.canvas)
         vbox.addLayout(hbox)
         vbox.addLayout(grid_general)
-        vbox.addWidget(groupbox_labels)
-        vbox.addWidget(groupbox_figure)
+        vbox.addLayout(grid)
+        vbox.addLayout(grid2)
+        vbox.addLayout(hbox_av)
 
     def populate_ui(self):
         profile = self.main.profile_settings
@@ -399,3 +418,7 @@ class ExportWidget(QtGui.QWidget):
             self.fig.set_size_inches(previous_size)
 
             self.canvas.draw()
+    def on_run(self):
+        cmdstr = str(self.cb_cmd.currentText())
+        if cmdstr.startswith("plt.") or cmdstr.startswith('self.canvas.draw()'):
+            exec(cmdstr)
