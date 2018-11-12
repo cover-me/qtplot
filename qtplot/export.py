@@ -162,17 +162,30 @@ class ExportWidget(QtGui.QWidget):
         grid2.addWidget(QtGui.QLabel('Linecut'), 7, 5)
         self.cb_linecut = QtGui.QCheckBox('')
         grid2.addWidget(self.cb_linecut, 7, 6)
-        
-        grid3 = QtGui.QGridLayout()
-        
+              
         # Advance tools
-        grid3.addWidget(QtGui.QLabel('Cmd'), 8, 1)
-        self.le_cmd = QtGui.QLineEdit('')
-        grid3.addWidget(self.le_cmd, 8, 2)        
+        hbox_av = QtGui.QHBoxLayout()
+        
+        lb_cmd = QtGui.QLabel('Cmd')
+        lb_cmd.setMaximumWidth(20)
+        hbox_av.addWidget(lb_cmd)
+        
+        self.cb_cmd =  QtGui.QComboBox()
+        self.cb_cmd.setEditable(True)
+        self.cb_cmd.addItem("")
+        self.cb_cmd.addItem("plt.plot([0,1],[0,0],'yellow',linewidth=2);self.canvas.draw()")
+        self.cb_cmd.addItem("plt.gca().lines[-1].remove();self.canvas.draw()")
+        self.cb_cmd.addItem("plt.autoscale(enable=True, axis='both', tight=None);self.canvas.draw()")
+        self.cb_cmd.addItem("plt.gca().set_xlim(None, None);self.canvas.draw()")
+        self.cb_cmd.addItem("plt.tight_layout();self.canvas.draw()")
+        self.cb_cmd.addItem("plt.subplots_adjust(0.125,0.1,0.9,0.9);self.canvas.draw()")
 
-        self.b_add_pt = QtGui.QPushButton('Run', self)
-        self.b_add_pt.clicked.connect(self.on_add_pt)
-        grid3.addWidget(self.b_add_pt, 8, 3)
+        hbox_av.addWidget(self.cb_cmd)        
+
+        self.b_run = QtGui.QPushButton('Run', self)
+        self.b_run.setMaximumWidth(60)
+        self.b_run.clicked.connect(self.on_run)
+        hbox_av.addWidget(self.b_run)
  
         vbox = QtGui.QVBoxLayout(self)
         vbox.addWidget(self.toolbar)
@@ -181,7 +194,7 @@ class ExportWidget(QtGui.QWidget):
         vbox.addLayout(grid_general)
         vbox.addLayout(grid)
         vbox.addLayout(grid2)
-        vbox.addLayout(grid3)
+        vbox.addLayout(hbox_av)
 
     def populate_ui(self):
         profile = self.main.profile_settings
@@ -405,6 +418,7 @@ class ExportWidget(QtGui.QWidget):
             self.fig.set_size_inches(previous_size)
 
             self.canvas.draw()
-    def on_add_pt(self):
-        if str(self.le_cmd.text()).startswith("plt."):
-            exec(str(self.le_cmd.text()))
+    def on_run(self):
+        cmdstr = str(self.cb_cmd.currentText())
+        if cmdstr.startswith("plt.") or cmdstr.startswith('self.canvas.draw()'):
+            exec(cmdstr)

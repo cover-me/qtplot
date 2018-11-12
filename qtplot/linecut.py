@@ -23,12 +23,13 @@ class Linetrace(plt.Line2D):
     traceLabel:   label containing infomation of the file name and the x/y coordinate at which the linetrace was taken
     """
 
-    def __init__(self, x, y, row_numbers, type, traceLabel, **kwargs):
+    def __init__(self, x, y, row_numbers, type, position, traceLabel, **kwargs):
         plt.Line2D.__init__(self, x, y, label=traceLabel,  **kwargs)
 
         self.row_numbers = row_numbers
         self.type = type
         self.traceLabel = traceLabel
+        self.position = position
 class LineColors():
     def __init__(self,c_list):
         self.c_list = c_list
@@ -374,7 +375,7 @@ class Linecut(QtGui.QDialog):
 
             self.linetraces = []
 
-            line = Linetrace(x, y, row_numbers, type, traceLabel,
+            line = Linetrace(x, y, row_numbers, type, position, traceLabel,
                              color='red',
                              picker=5,
                              **self.get_line_kwargs())
