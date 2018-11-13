@@ -33,6 +33,7 @@ class qpServer(QtCore.QObject):
                 key,value = i.split(':',1)
                 if key == 'FILE':
                     if os.path.isfile(value):
+                        self.main.le_path.setText(value)
                         self.main.load_dat_file(value)
                         msg_return += 'FILE:Done!;'
                     else:

@@ -367,6 +367,7 @@ class Canvas(scene.SceneCanvas):
                 fileCount = int(_[i+1:])+inc
                 _ = _[:i+1]+str(fileCount)+'.dat'
                 if os.path.isfile(_):
+                    self.parent.le_path.setText(_)
                     self.parent.load_dat_file(_)
 
     def on_mouse_move(self, event):
