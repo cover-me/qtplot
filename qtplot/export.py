@@ -37,7 +37,7 @@ class ExportWidget(QtGui.QWidget):
         self.b_update.clicked.connect(self.on_update)
         hbox.addWidget(self.b_update)
 
-        self.b_copy = QtGui.QPushButton('Copy to clipboard', self)
+        self.b_copy = QtGui.QPushButton('To clipboard', self)
         self.b_copy.clicked.connect(self.on_copy)
         hbox.addWidget(self.b_copy)
 

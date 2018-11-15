@@ -351,6 +351,20 @@ class QTPlot(QtGui.QMainWindow):
         self.b_settings.clicked.connect(self.settings.show_window)
         hbox4.addWidget(self.b_settings)
 
+        self.l_win_size = QtGui.QLabel('Win Size')
+        hbox4.addWidget(self.l_win_size)
+        
+        self.le_win_size = QtGui.QLineEdit(self)
+        hbox4.addWidget(self.le_win_size)
+
+        self.b_get_win_size = QtGui.QPushButton('Get')
+        self.b_get_win_size.clicked.connect(self.on_b_get_win_size)
+        hbox4.addWidget(self.b_get_win_size)
+
+        self.b_set_win_size = QtGui.QPushButton('Set')
+        self.b_set_win_size.clicked.connect(self.on_b_set_win_size)
+        hbox4.addWidget(self.b_set_win_size)
+
         # Main vertical box
         vbox = QtGui.QVBoxLayout(self.view_widget)
         vbox.addWidget(self.canvas.native)
@@ -373,7 +387,7 @@ class QTPlot(QtGui.QMainWindow):
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
 
-        self.resize(500, 740)
+        self.resize(500, 700)
         self.move(100, 100)
 
         self.setAcceptDrops(True)
@@ -621,9 +635,12 @@ class QTPlot(QtGui.QMainWindow):
             self.load_dat_file(filename)
 
     def on_refresh(self, event):
-        self.filename = str(self.le_path.text()).strip()
-        if self.filename:
+        new_filepath = str(self.le_path.text()).strip()
+        if os.path.isfile(new_filepath) and (new_filepath.endswith('.dat') or new_filepath.endswith('.npy')):
+            self.filename = new_filepath
             self.load_dat_file(self.filename)
+        else:
+            self.le_path.setText("Error file path!")
 
     def on_swap_axes(self, event):
         x, y = self.cb_x.currentIndex(), self.cb_y.currentIndex()
@@ -734,6 +751,7 @@ class QTPlot(QtGui.QMainWindow):
             self.s_min.setValue(0)
             self.on_min_changed(0)
             self.s_gamma.setValue(0)
+            self.on_gamma_changed(0)
             self.s_max.setValue(100)
             self.on_max_changed(100)
 
@@ -755,7 +773,20 @@ class QTPlot(QtGui.QMainWindow):
             name, ext = os.path.splitext(base)
 
             self.data.save(filename)
-
+            
+    def on_b_get_win_size(self):
+        width = self.width()
+        height = self.height()
+        self.le_win_size.setText('%s %s'%(width,height))
+    
+    def on_b_set_win_size(self):
+        try:
+            s = str(self.le_win_size.text())
+            width, height = s.split(' ')
+            self.resize(int(width), int(height))
+        except:
+            self.on_b_get_win_size()
+    
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             url = str(event.mimeData().urls()[0].toString())

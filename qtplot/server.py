@@ -34,6 +34,7 @@ class qpServer(QtCore.QObject):
                 if key == 'FILE':
                     if os.path.isfile(value):
                         self.main.le_path.setText(value)
+                        self.main.main_widget.setCurrentIndex(0)
                         self.main.load_dat_file(value)
                         msg_return += 'FILE:Done!;'
                     else:
@@ -56,6 +57,12 @@ class qpServer(QtCore.QObject):
                 elif key == 'REFR':
                     if self.main.filename == value:
                         self.main.load_dat_file(value)
+                elif key == 'UPDA':
+                    if self.main.filename == value:
+                        self.main.export_widget.on_update()
+                        msg_return += 'UPDA:Done!;'
+                    else:
+                        msg_return += 'UPDA:Error file path;'
                 else:
                     msg_return += 'Unknown key:%s;'%key
             except:
