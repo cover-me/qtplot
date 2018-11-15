@@ -63,6 +63,9 @@ class qpServer(QtCore.QObject):
                         msg_return += 'UPDA:Done!;'
                     else:
                         msg_return += 'UPDA:Error file path;'
+                elif key == 'NOTE':
+                    self.main.le_notes.setText(value)
+                    msg_return += 'NOTE:Done!;'
                 else:
                     msg_return += 'Unknown key:%s;'%key
             except:

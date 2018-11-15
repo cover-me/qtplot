@@ -238,6 +238,7 @@ class ExportWidget(QtGui.QWidget):
             '<x>': self.main.x_name,
             '<y>': self.main.y_name,
             '<z>': self.main.data_name
+            '<notes>': str(self.main.le_notes.text())
         }
 
         for old, new in conversions.items():
