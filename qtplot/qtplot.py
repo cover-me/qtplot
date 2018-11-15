@@ -173,11 +173,11 @@ class QTPlot(QtGui.QMainWindow):
         
         self.b_load = QtGui.QPushButton('Load...')
         self.b_load.clicked.connect(self.on_load_dat)
-        hbox2.addWidget(self.b_load)
+        hbox.addWidget(self.b_load)
 
         self.b_refresh = QtGui.QPushButton('Refresh')
         self.b_refresh.clicked.connect(self.on_refresh)
-        hbox2.addWidget(self.b_refresh)
+        hbox.addWidget(self.b_refresh)
         
         self.b_swap_axes = QtGui.QPushButton('Swap axes', self)
         self.b_swap_axes.clicked.connect(self.on_swap_axes)
@@ -263,9 +263,11 @@ class QTPlot(QtGui.QMainWindow):
         vbox_gamma = QtGui.QVBoxLayout()
         hbox_gamma1 = QtGui.QHBoxLayout()
         hbox_gamma2 = QtGui.QHBoxLayout()
+        hbox_gamma3 = QtGui.QHBoxLayout()
         vbox_gamma.addLayout(hbox_gamma1)
         vbox_gamma.addLayout(hbox_gamma2)
-
+        vbox_gamma.addLayout(hbox_gamma3)
+        
         # Reset colormap button
         self.cb_reset_cmap = QtGui.QCheckBox('Reset on plot')
         self.cb_reset_cmap.setCheckState(QtCore.Qt.Checked)
@@ -297,40 +299,43 @@ class QTPlot(QtGui.QMainWindow):
         hbox_gamma1.addWidget(self.cb_cmaps)
 
         # Colormap minimum text box
+        hbox_gamma2.addWidget(QtGui.QLabel('Min:'))
         self.le_min = QtGui.QLineEdit(self)
-        self.le_min.setMaximumWidth(100)
+        self.le_min.setMaximumWidth(80)
         self.le_min.returnPressed.connect(self.on_min_max_entered)
         hbox_gamma2.addWidget(self.le_min)
 
         # Colormap minimum slider
         self.s_min = QtGui.QSlider(QtCore.Qt.Horizontal)
-        self.s_min.setMaximum(100)
+        # self.s_min.setMaximum(100)
         self.s_min.sliderMoved.connect(self.on_min_changed)
         hbox_gamma2.addWidget(self.s_min)
 
         # Gamma text box
+        hbox_gamma2.addWidget(QtGui.QLabel('G:'))
         self.le_gamma = QtGui.QLineEdit(self)
-        self.le_gamma.setMaximumWidth(100)
+        self.le_gamma.setMaximumWidth(80)
         self.le_gamma.returnPressed.connect(self.on_le_gamma_entered)
         hbox_gamma2.addWidget(self.le_gamma)
         
         # Colormap gamma slider
         self.s_gamma = QtGui.QSlider(QtCore.Qt.Horizontal)
         self.s_gamma.setMinimum(-100)
-        self.s_gamma.setMaximum(100)
+        # self.s_gamma.setMaximum(100)
         self.s_gamma.setValue(0)
         self.s_gamma.valueChanged.connect(self.on_gamma_changed)
         hbox_gamma2.addWidget(self.s_gamma)
 
         # Colormap maximum text box
+        hbox_gamma2.addWidget(QtGui.QLabel('Max:'))
         self.le_max = QtGui.QLineEdit(self)
-        self.le_max.setMaximumWidth(100)
+        self.le_max.setMaximumWidth(80)
         self.le_max.returnPressed.connect(self.on_min_max_entered)
         hbox_gamma2.addWidget(self.le_max)
 
         # Colormap maximum slider
         self.s_max = QtGui.QSlider(QtCore.Qt.Horizontal)
-        self.s_max.setMaximum(100)
+        # self.s_max.setMaximum(100)
         self.s_max.setValue(self.s_max.maximum())
         self.s_max.sliderMoved.connect(self.on_max_changed)
         hbox_gamma2.addWidget(self.s_max)
@@ -343,18 +348,26 @@ class QTPlot(QtGui.QMainWindow):
         # Bottom row buttons
         hbox4 = QtGui.QHBoxLayout()
 
-        self.b_save_matrix = QtGui.QPushButton('Save data...')
-        self.b_save_matrix.clicked.connect(self.on_save_matrix)
-        hbox4.addWidget(self.b_save_matrix)
-
         self.b_settings = QtGui.QPushButton('Settings')
         self.b_settings.clicked.connect(self.settings.show_window)
-        hbox4.addWidget(self.b_settings)
+        hbox2.addWidget(self.b_settings)
 
-        self.l_win_size = QtGui.QLabel('Win Size')
+        self.b_save_matrix = QtGui.QPushButton('Save data...')
+        self.b_save_matrix.clicked.connect(self.on_save_matrix)
+        hbox2.addWidget(self.b_save_matrix)
+
+        self.l_notes = QtGui.QLabel('Notes:')
+        hbox4.addWidget(self.l_notes)
+        
+        self.le_notes = QtGui.QLineEdit(self)
+        self.le_notes.setReadOnly(True)
+        hbox4.addWidget(self.le_notes)
+        
+        self.l_win_size = QtGui.QLabel('Win Size:')
         hbox4.addWidget(self.l_win_size)
         
         self.le_win_size = QtGui.QLineEdit(self)
+        self.le_win_size.setMaximumWidth(60)
         hbox4.addWidget(self.le_win_size)
 
         self.b_get_win_size = QtGui.QPushButton('Get')
@@ -607,9 +620,7 @@ class QTPlot(QtGui.QMainWindow):
 
         # If we want to reset the colormap for each data update, do so
         if self.cb_reset_cmap.checkState() == QtCore.Qt.Checked:
-            self.on_min_changed(0)
-            self.s_gamma.setValue(0)
-            self.on_max_changed(100)
+            self.on_cm_reset()
 
         self.canvas.set_data(self.data)
         # Update the linecut
@@ -710,7 +721,7 @@ class QTPlot(QtGui.QMainWindow):
 
             self.canvas.update()
     
-    def on_min_changed(self, value):
+    def on_min_changed(self, value, update=True):
         if self.data is not None:
             min, max = np.nanmin(self.data.z), np.nanmax(self.data.z)
 
@@ -726,14 +737,14 @@ class QTPlot(QtGui.QMainWindow):
             self.s_gamma.setValue(newgamma)
             self.on_gamma_changed(newgamma)
 
-    def on_gamma_changed(self, value):
+    def on_gamma_changed(self, value, update=True):
         self.le_gamma.setText('%.1f'% value)
         if self.data is not None:
             gamma = 10.0**(value / 100.0)
             self.canvas.colormap.gamma = gamma
             self.canvas.update()
 
-    def on_max_changed(self, value):
+    def on_max_changed(self, value, update=True):
         if self.data is not None:
             min, max = np.nanmin(self.data.z), np.nanmax(self.data.z)
 
@@ -749,9 +760,9 @@ class QTPlot(QtGui.QMainWindow):
     def on_cm_reset(self):
         if self.data is not None:
             self.s_min.setValue(0)
-            self.on_min_changed(0)
+            self.on_min_changed(0, update=False)
             self.s_gamma.setValue(0)
-            self.on_gamma_changed(0)
+            self.on_gamma_changed(0, update=False)
             self.s_max.setValue(100)
             self.on_max_changed(100)
 
