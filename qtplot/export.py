@@ -237,7 +237,7 @@ class ExportWidget(QtGui.QWidget):
             '<operations>': self.main.operations.op_str,
             '<x>': self.main.x_name,
             '<y>': self.main.y_name,
-            '<z>': self.main.data_name
+            '<z>': self.main.data_name,
             '<notes>': str(self.main.le_notes.text())
         }
 
