@@ -175,10 +175,12 @@ class ExportWidget(QtGui.QWidget):
         self.cb_cmd.addItem("")
         self.cb_cmd.addItem("plt.plot([0,1],[0,0],'yellow',linewidth=2);self.canvas.draw()")
         self.cb_cmd.addItem("plt.gca().lines[-1].remove();self.canvas.draw()")
-        self.cb_cmd.addItem("plt.autoscale(enable=True, axis='both', tight=None);self.canvas.draw()")
+        self.cb_cmd.addItem("plt.autoscale(True, 'both', tight=None);self.canvas.draw()")
         self.cb_cmd.addItem("plt.gca().set_xlim(None, None);self.canvas.draw()")
         self.cb_cmd.addItem("plt.tight_layout();self.canvas.draw()")
         self.cb_cmd.addItem("plt.subplots_adjust(0.125,0.1,0.9,0.9);self.canvas.draw()")
+        self.cb_cmd.addItem("self.le_ans.setText('%s %s'%(self.main.width(),self.main.height()))")
+        self.cb_cmd.addItem("self.main.resize(500,700)")
 
         hbox_av.addWidget(self.cb_cmd)        
 
@@ -186,7 +188,12 @@ class ExportWidget(QtGui.QWidget):
         self.b_run.setMaximumWidth(60)
         self.b_run.clicked.connect(self.on_run)
         hbox_av.addWidget(self.b_run)
- 
+        
+        self.le_ans = QtGui.QLineEdit(self)
+        self.le_ans.setEnabled(False)
+        self.le_ans.setMaximumWidth(60)
+        hbox_av.addWidget(self.le_ans)
+        
         vbox = QtGui.QVBoxLayout(self)
         vbox.addWidget(self.toolbar)
         vbox.addWidget(self.canvas)
@@ -198,8 +205,9 @@ class ExportWidget(QtGui.QWidget):
 
     def populate_ui(self):
         profile = self.main.profile_settings
-
-        self.le_title.setText(profile['title'])
+        
+        if '<keep>' not in str(self.le_title.text()):
+            self.le_title.setText(profile['title'])
         self.le_dpi.setText(profile['DPI'])
         self.cb_rasterize.setChecked(bool(profile['rasterize']))
         
@@ -227,9 +235,13 @@ class ExportWidget(QtGui.QWidget):
         self.cb_tripcolor.setChecked(bool(profile['tripcolor']))
         self.cb_linecut.setChecked(bool(profile['linecut']))
 
-    def keyPressEvent(self, e):
+    def keyPressEvent(self, e):#seems not work....
         if e.key() == QtCore.Qt.Key_Return:
             self.on_update()
+        elif e.key=='Left':
+            self.main.canvas.loadNext(self.parent.abs_filename,-1)
+        elif e.key=='Right':
+            self.main.canvas.loadNext(self.parent.abs_filename)
 
     def format_label(self, s):
         conversions = {
@@ -238,12 +250,15 @@ class ExportWidget(QtGui.QWidget):
             '<x>': self.main.x_name,
             '<y>': self.main.y_name,
             '<z>': self.main.data_name,
-            '<notes>': str(self.main.le_notes.text())
+            '<keep>':'',
+            '<return>':'\n'
         }
-
         for old, new in conversions.items():
             s = s.replace(old, new)
-
+        for key, item in self.main.dat_file.qtlab_settings.items():
+            if isinstance(item, dict):
+                for key_, item_ in item.items():
+                    s = s.replace('<%s:%s>'%(key,key_), '%s'%item_)
         return s
 
     def on_update(self):
@@ -302,9 +317,9 @@ class ExportWidget(QtGui.QWidget):
 
             title = self.format_label(str(self.le_title.text()))
             title += '' if len(self.filenames)<2 else  (' & ' + ' '.join(self.filenames[:-1]))
-            title = '\n'.join(textwrap.wrap(title, 40, replace_whitespace=False))
+            title = '\n'.join(textwrap.wrap(title, max(int(30*(self.main.width()/300.)),40), replace_whitespace=False))
             # Set all the plot labels
-            self.ax.set_title(title)
+            self.ax.set_title(title,fontsize=int(str(self.le_font_size.text())))
             self.ax.set_xlabel(self.format_label(self.le_x_label.text()))
             self.ax.set_ylabel(self.format_label(self.le_y_label.text()))
 
@@ -421,5 +436,8 @@ class ExportWidget(QtGui.QWidget):
             self.canvas.draw()
     def on_run(self):
         cmdstr = str(self.cb_cmd.currentText())
-        if cmdstr.startswith("plt.") or cmdstr.startswith('self.canvas.draw()'):
-            exec(cmdstr)
+        if cmdstr.startswith("plt.") or cmdstr.startswith('self'):
+            try:
+                exec(cmdstr)
+            except:
+                self.le_ans.setText('Error!')

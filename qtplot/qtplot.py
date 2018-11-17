@@ -166,6 +166,7 @@ class QTPlot(QtGui.QMainWindow):
         hbox.addWidget(lbl_folder)
         
         self.le_path = QtGui.QLineEdit(self)
+        self.le_path.returnPressed.connect(self.on_refresh)
         hbox.addWidget(self.le_path)
         
         # Top row buttons
@@ -260,13 +261,9 @@ class QTPlot(QtGui.QMainWindow):
                             self.cb_x, self.cb_y, self.cb_z]
 
         # Colormap
-        vbox_gamma = QtGui.QVBoxLayout()
         hbox_gamma1 = QtGui.QHBoxLayout()
         hbox_gamma2 = QtGui.QHBoxLayout()
         hbox_gamma3 = QtGui.QHBoxLayout()
-        vbox_gamma.addLayout(hbox_gamma1)
-        vbox_gamma.addLayout(hbox_gamma2)
-        vbox_gamma.addLayout(hbox_gamma3)
         
         # Reset colormap button
         self.cb_reset_cmap = QtGui.QCheckBox('Reset on plot')
@@ -301,7 +298,7 @@ class QTPlot(QtGui.QMainWindow):
         # Colormap minimum text box
         hbox_gamma2.addWidget(QtGui.QLabel('Min:'))
         self.le_min = QtGui.QLineEdit(self)
-        self.le_min.setMaximumWidth(80)
+        # self.le_min.setMaximumWidth(80)
         self.le_min.returnPressed.connect(self.on_min_max_entered)
         hbox_gamma2.addWidget(self.le_min)
 
@@ -309,12 +306,12 @@ class QTPlot(QtGui.QMainWindow):
         self.s_min = QtGui.QSlider(QtCore.Qt.Horizontal)
         # self.s_min.setMaximum(100)
         self.s_min.sliderMoved.connect(self.on_min_changed)
-        hbox_gamma2.addWidget(self.s_min)
+        hbox_gamma3.addWidget(self.s_min)
 
         # Gamma text box
         hbox_gamma2.addWidget(QtGui.QLabel('G:'))
         self.le_gamma = QtGui.QLineEdit(self)
-        self.le_gamma.setMaximumWidth(80)
+        # self.le_gamma.setMaximumWidth(80)
         self.le_gamma.returnPressed.connect(self.on_le_gamma_entered)
         hbox_gamma2.addWidget(self.le_gamma)
         
@@ -324,12 +321,12 @@ class QTPlot(QtGui.QMainWindow):
         # self.s_gamma.setMaximum(100)
         self.s_gamma.setValue(0)
         self.s_gamma.valueChanged.connect(self.on_gamma_changed)
-        hbox_gamma2.addWidget(self.s_gamma)
+        hbox_gamma3.addWidget(self.s_gamma)
 
         # Colormap maximum text box
         hbox_gamma2.addWidget(QtGui.QLabel('Max:'))
         self.le_max = QtGui.QLineEdit(self)
-        self.le_max.setMaximumWidth(80)
+        # self.le_max.setMaximumWidth(80)
         self.le_max.returnPressed.connect(self.on_min_max_entered)
         hbox_gamma2.addWidget(self.le_max)
 
@@ -338,7 +335,7 @@ class QTPlot(QtGui.QMainWindow):
         # self.s_max.setMaximum(100)
         self.s_max.setValue(self.s_max.maximum())
         self.s_max.sliderMoved.connect(self.on_max_changed)
-        hbox_gamma2.addWidget(self.s_max)
+        hbox_gamma3.addWidget(self.s_max)
 
 
         self.b_reset = QtGui.QPushButton('Reset')
@@ -346,8 +343,6 @@ class QTPlot(QtGui.QMainWindow):
         hbox_gamma1.addWidget(self.b_reset)
 
         # Bottom row buttons
-        hbox4 = QtGui.QHBoxLayout()
-
         self.b_settings = QtGui.QPushButton('Settings')
         self.b_settings.clicked.connect(self.settings.show_window)
         hbox2.addWidget(self.b_settings)
@@ -356,28 +351,6 @@ class QTPlot(QtGui.QMainWindow):
         self.b_save_matrix.clicked.connect(self.on_save_matrix)
         hbox2.addWidget(self.b_save_matrix)
 
-        self.l_notes = QtGui.QLabel('Notes:')
-        hbox4.addWidget(self.l_notes)
-        
-        self.le_notes = QtGui.QLineEdit(self)
-        self.le_notes.setReadOnly(True)
-        hbox4.addWidget(self.le_notes)
-        
-        self.l_win_size = QtGui.QLabel('Win Size:')
-        hbox4.addWidget(self.l_win_size)
-        
-        self.le_win_size = QtGui.QLineEdit(self)
-        self.le_win_size.setMaximumWidth(60)
-        hbox4.addWidget(self.le_win_size)
-
-        self.b_get_win_size = QtGui.QPushButton('Get')
-        self.b_get_win_size.clicked.connect(self.on_b_get_win_size)
-        hbox4.addWidget(self.b_get_win_size)
-
-        self.b_set_win_size = QtGui.QPushButton('Set')
-        self.b_set_win_size.clicked.connect(self.on_b_set_win_size)
-        hbox4.addWidget(self.b_set_win_size)
-
         # Main vertical box
         vbox = QtGui.QVBoxLayout(self.view_widget)
         vbox.addWidget(self.canvas.native)
@@ -385,8 +358,9 @@ class QTPlot(QtGui.QMainWindow):
         vbox.addLayout(hbox2)
         vbox.addLayout(r_hbox)
         vbox.addLayout(grid)
-        vbox.addLayout(vbox_gamma)
-        vbox.addLayout(hbox4)
+        vbox.addLayout(hbox_gamma1)
+        vbox.addLayout(hbox_gamma2)
+        vbox.addLayout(hbox_gamma3)
 
         self.status_bar = QtGui.QStatusBar()
         self.l_position = QtGui.QLabel()
@@ -592,7 +566,7 @@ class QTPlot(QtGui.QMainWindow):
         self.linecut.populate_ui()
 
         # If we are viewing the export tab, update the plot
-        if self.main_widget.currentWidget() == self.export_widget:
+        if self.main_widget.currentIndex() == 1:
             self.export_widget.on_update()
 
     def get_parameter_names(self):
@@ -645,7 +619,7 @@ class QTPlot(QtGui.QMainWindow):
         if filename != "":
             self.load_dat_file(filename)
 
-    def on_refresh(self, event):
+    def on_refresh(self):
         new_filepath = str(self.le_path.text()).strip()
         if os.path.isfile(new_filepath) and (new_filepath.endswith('.dat') or new_filepath.endswith('.npy')):
             self.filename = new_filepath
@@ -784,19 +758,6 @@ class QTPlot(QtGui.QMainWindow):
             name, ext = os.path.splitext(base)
 
             self.data.save(filename)
-            
-    def on_b_get_win_size(self):
-        width = self.width()
-        height = self.height()
-        self.le_win_size.setText('%s %s'%(width,height))
-    
-    def on_b_set_win_size(self):
-        try:
-            s = str(self.le_win_size.text())
-            width, height = s.split(' ')
-            self.resize(int(width), int(height))
-        except:
-            self.on_b_get_win_size()
     
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
