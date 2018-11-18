@@ -272,6 +272,7 @@ class QTPlot(QtGui.QMainWindow):
 
         # Colormap combobox
         self.cb_cmaps = QtGui.QComboBox(self)
+        self.cb_cmaps.setMinimumContentsLength(5)
         self.cb_cmaps.activated.connect(self.on_cmap_change)
 
         path = os.path.dirname(os.path.realpath(__file__))

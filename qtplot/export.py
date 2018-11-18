@@ -171,6 +171,7 @@ class ExportWidget(QtGui.QWidget):
         hbox_av.addWidget(lb_cmd)
         
         self.cb_cmd =  QtGui.QComboBox()
+        self.cb_cmd.setMinimumContentsLength(5)
         self.cb_cmd.setEditable(True)
         self.cb_cmd.addItem("")
         self.cb_cmd.addItem("plt.plot([0,1],[0,0],'yellow',linewidth=2);self.canvas.draw()")
@@ -190,7 +191,7 @@ class ExportWidget(QtGui.QWidget):
         hbox_av.addWidget(self.b_run)
         
         self.le_ans = QtGui.QLineEdit(self)
-        self.le_ans.setEnabled(False)
+        # self.le_ans.setEnabled(False)
         self.le_ans.setMaximumWidth(60)
         hbox_av.addWidget(self.le_ans)
         
@@ -359,7 +360,7 @@ class ExportWidget(QtGui.QWidget):
     def on_copy(self):
         """ Copy the current plot to the clipboard """
         buf = io.BytesIO()
-        self.fig.savefig(buf)
+        self.fig.savefig(buf,dpi=int(self.le_dpi.text()))
         img = QtGui.QImage.fromData(buf.getvalue())
         QtGui.QApplication.clipboard().setImage(img)
         buf.close()
