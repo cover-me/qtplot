@@ -182,6 +182,7 @@ class ExportWidget(QtGui.QWidget):
         self.cb_cmd.addItem("plt.subplots_adjust(0.125,0.1,0.9,0.9);self.canvas.draw()")
         self.cb_cmd.addItem("self.le_ans.setText('%s %s'%(self.main.width(),self.main.height()))")
         self.cb_cmd.addItem("self.main.resize(500,700)")
+        self.cb_cmd.addItem("plt.text(1,0,'(%s %s %s) (%s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text(),self.main.width(),self.main.height()),verticalalignment='bottom',horizontalalignment='right',transform=self.fig.transFigure,fontsize=10);self.canvas.draw()")
 
         hbox_av.addWidget(self.cb_cmd)        
 
@@ -252,7 +253,9 @@ class ExportWidget(QtGui.QWidget):
             '<y>': self.main.y_name,
             '<z>': self.main.data_name,
             '<keep>':'',
-            '<return>':'\n'
+            '<return>':'\n',
+            '<gamma>':'(%s %s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text()),
+            '<winSize>':'(%s %s)'%(self.main.width(),self.main.height())
         }
         for old, new in conversions.items():
             s = s.replace(old, new)
@@ -440,5 +443,6 @@ class ExportWidget(QtGui.QWidget):
         if cmdstr.startswith("plt.") or cmdstr.startswith('self'):
             try:
                 exec(cmdstr)
+                self.le_ans.setText('')
             except:
                 self.le_ans.setText('Error!')
