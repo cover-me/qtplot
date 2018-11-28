@@ -28,7 +28,7 @@ def eng_format(number, significance):
 class FixedOrderFormatter(ScalarFormatter):
     """Format numbers using engineering notation."""
     def __init__(self, format='%.0f', division=1e0):
-        ScalarFormatter.__init__(self, useOffset=None, useMathText=None)
+        ScalarFormatter.__init__(self, useOffset=None, useMathText=True)
         self.format = format
         self.division = division
 
@@ -44,5 +44,16 @@ class FixedOrderFormatter(ScalarFormatter):
         pass
 
     def _set_orderOfMagnitude(self, range):
-        exp = np.floor(np.log10(range / 4 / self.division))
+        locs = np.abs(self.locs)
+        if self.offset:
+            exp = np.floor(np.log10(range / self.division))
+        else:
+            if locs[0] > locs[-1]:
+                val = locs[0]
+            else:
+                val = locs[-1]
+            if val == 0:
+                exp = 0
+            else:
+                exp = np.floor(np.log10(val / self.division))
         self.orderOfMagnitude = exp - (exp % 3)

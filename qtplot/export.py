@@ -37,22 +37,27 @@ class ExportWidget(QtGui.QWidget):
         self.b_update.clicked.connect(self.on_update)
         hbox.addWidget(self.b_update)
 
-        self.b_copy = QtGui.QPushButton('To clipboard', self)
+        self.b_copy = QtGui.QPushButton('Copy', self)
         self.b_copy.clicked.connect(self.on_copy)
         hbox.addWidget(self.b_copy)
 
-        self.b_to_ppt = QtGui.QPushButton('To PPT (Win)', self)
+        self.b_to_ppt = QtGui.QPushButton('To PPT', self)
         self.b_to_ppt.clicked.connect(self.on_to_ppt)
         hbox.addWidget(self.b_to_ppt)
 
-        self.b_to_word = QtGui.QPushButton('To word (Win)', self)
+        self.b_to_word = QtGui.QPushButton('To word', self)
         self.b_to_word.clicked.connect(self.on_to_word)
         hbox.addWidget(self.b_to_word)
 
-        self.b_export = QtGui.QPushButton('Export...', self)
+        self.b_export = QtGui.QPushButton('Export', self)
         self.b_export.clicked.connect(self.on_export)
         hbox.addWidget(self.b_export)
-        
+
+        for i in range(hbox.count()):
+            w = hbox.itemAt(i).widget()
+            if isinstance(w, QtGui.QPushButton):
+                w.setMinimumWidth(20)
+                
         grid_general = QtGui.QGridLayout()
 
         grid_general.addWidget(QtGui.QLabel('Title'), 1, 1)
@@ -121,7 +126,6 @@ class ExportWidget(QtGui.QWidget):
         grid.addWidget(self.le_z_div, 4, 6)
 
         grid2 = QtGui.QGridLayout()
-
         # Font
         grid2.addWidget(QtGui.QLabel('Font'), 5, 1)
         self.le_font = QtGui.QLineEdit('Vera Sans')
@@ -162,7 +166,7 @@ class ExportWidget(QtGui.QWidget):
         grid2.addWidget(QtGui.QLabel('Linecut'), 7, 5)
         self.cb_linecut = QtGui.QCheckBox('')
         grid2.addWidget(self.cb_linecut, 7, 6)
-              
+            
         # Advance tools
         hbox_av = QtGui.QHBoxLayout()
         
@@ -442,7 +446,7 @@ class ExportWidget(QtGui.QWidget):
         cmdstr = str(self.cb_cmd.currentText())
         if cmdstr.startswith("plt.") or cmdstr.startswith('self'):
             try:
-                exec(cmdstr)
                 self.le_ans.setText('')
+                exec(cmdstr)
             except:
                 self.le_ans.setText('Error!')

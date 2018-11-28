@@ -195,7 +195,7 @@ class QTPlot(QtGui.QMainWindow):
         # Subtracting series R
         r_hbox = QtGui.QHBoxLayout()
 
-        lbl_sub = QtGui.QLabel('Sub series R:')
+        lbl_sub = QtGui.QLabel('Sub R:')
         lbl_sub.setMaximumWidth(70)
         r_hbox.addWidget(lbl_sub)
 
@@ -221,11 +221,13 @@ class QTPlot(QtGui.QMainWindow):
 
         self.le_r = QtGui.QLineEdit(self)
         self.le_r.setMaximumWidth(50)
+        self.le_r.setMinimumWidth(20)
         self.le_r.returnPressed.connect(self.on_sub_series_r)
         r_hbox.addWidget(self.le_r)
 
         self.b_ok = QtGui.QPushButton('Ok', self)
         self.b_ok.clicked.connect(self.on_sub_series_r)
+        self.b_ok.setMinimumWidth(22)
         self.b_ok.setMaximumWidth(50)
         r_hbox.addWidget(self.b_ok)
 
@@ -348,9 +350,14 @@ class QTPlot(QtGui.QMainWindow):
         self.b_settings.clicked.connect(self.settings.show_window)
         hbox2.addWidget(self.b_settings)
 
-        self.b_save_matrix = QtGui.QPushButton('Save data...')
+        self.b_save_matrix = QtGui.QPushButton('Save data')
         self.b_save_matrix.clicked.connect(self.on_save_matrix)
         hbox2.addWidget(self.b_save_matrix)
+
+        for i in range(hbox2.count()):
+            w = hbox2.itemAt(i).widget()
+            if isinstance(w, QtGui.QPushButton):
+                w.setMinimumWidth(20)
 
         # Main vertical box
         vbox = QtGui.QVBoxLayout(self.view_widget)
@@ -375,7 +382,7 @@ class QTPlot(QtGui.QMainWindow):
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
 
-        self.resize(500, 700)
+        self.resize(400, 700)
         self.move(100, 100)
 
         self.setAcceptDrops(True)
