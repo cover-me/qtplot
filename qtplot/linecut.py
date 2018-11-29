@@ -362,7 +362,7 @@ class Linecut(QtGui.QDialog):
             title = '{0} {1}={2}'.format(title, otherlabel, z) if (otherlabel or z!='0') else title
 
         title = '\n'.join(textwrap.wrap(title, 60, replace_whitespace=False))
-        self.ax.set_title(title)
+        self.ax.set_title(title,fontsize=int(str(self.main.export_widget.le_font_size.text())))
 
         self.ax.set_xlabel(xlabel)
         self.ax.set_ylabel(ylabel)
