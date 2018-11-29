@@ -132,12 +132,12 @@ class ExportWidget(QtGui.QWidget):
         self.le_font = QtGui.QLineEdit('Vera Sans')
         grid2.addWidget(self.le_font, 5, 2)
 
-        grid2.addWidget(QtGui.QLabel('Font size'), 6, 1)
+        grid2.addWidget(QtGui.QLabel('Size'), 5, 3)
         self.le_font_size = QtGui.QLineEdit('12')
         grid2.addWidget(self.le_font_size, 6, 2)
 
         # Figure size
-        grid2.addWidget(QtGui.QLabel('Width'), 5, 3)
+        grid2.addWidget(QtGui.QLabel('Width'), 6, 1)
         self.le_width = QtGui.QLineEdit('3')
         grid2.addWidget(self.le_width, 5, 4)
 
@@ -149,30 +149,31 @@ class ExportWidget(QtGui.QWidget):
         grid2.addWidget(QtGui.QLabel('CB Orient'), 5, 5)
         self.cb_cb_orient = QtGui.QComboBox()
         self.cb_cb_orient.addItems(['vertical', 'horizontal'])
+        self.cb_cb_orient.setMinimumWidth(20)
         grid2.addWidget(self.cb_cb_orient, 5, 6)
 
         grid2.addWidget(QtGui.QLabel('CB Pos'), 6, 5)
         self.le_cb_pos = QtGui.QLineEdit('0 0 1 1')
         grid2.addWidget(self.le_cb_pos, 6, 6)
-
+        
+        hbox2 = QtGui.QHBoxLayout()
         # Additional things to plot
-        grid2.addWidget(QtGui.QLabel('Triangulation'), 7, 1)
+        hbox2.addWidget(QtGui.QLabel('Triangulation'))
         self.cb_triangulation = QtGui.QCheckBox('')
-        grid2.addWidget(self.cb_triangulation, 7, 2)
+        hbox2.addWidget(self.cb_triangulation)
 
-        grid2.addWidget(QtGui.QLabel('Tripcolor'), 7, 3)
+        hbox2.addWidget(QtGui.QLabel('Tripcolor'))
         self.cb_tripcolor = QtGui.QCheckBox('')
-        grid2.addWidget(self.cb_tripcolor, 7, 4)
+        hbox2.addWidget(self.cb_tripcolor)
 
-        grid2.addWidget(QtGui.QLabel('Linecut'), 7, 5)
+        hbox2.addWidget(QtGui.QLabel('Linecut'))
         self.cb_linecut = QtGui.QCheckBox('')
-        grid2.addWidget(self.cb_linecut, 7, 6)
+        hbox2.addWidget(self.cb_linecut)
             
         # Advance tools
         hbox_av = QtGui.QHBoxLayout()
         
         lb_cmd = QtGui.QLabel('Cmd')
-        lb_cmd.setMaximumWidth(20)
         hbox_av.addWidget(lb_cmd)
         
         self.cb_cmd =  QtGui.QComboBox()
@@ -210,6 +211,7 @@ class ExportWidget(QtGui.QWidget):
         vbox.addLayout(grid_general)
         vbox.addLayout(grid)
         vbox.addLayout(grid2)
+        vbox.addLayout(hbox2)
         vbox.addLayout(hbox_av)
 
     def populate_ui(self,force=False):

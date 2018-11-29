@@ -172,7 +172,7 @@ class QTPlot(QtGui.QMainWindow):
         # Top row buttons
         hbox2 = QtGui.QHBoxLayout()
         
-        self.b_load = QtGui.QPushButton('Load...')
+        self.b_load = QtGui.QPushButton('Load')
         self.b_load.clicked.connect(self.on_load_dat)
         hbox.addWidget(self.b_load)
 
@@ -268,7 +268,7 @@ class QTPlot(QtGui.QMainWindow):
         hbox_gamma3 = QtGui.QHBoxLayout()
         
         # Reset colormap button
-        self.cb_reset_cmap = QtGui.QCheckBox('Reset on plot')
+        self.cb_reset_cmap = QtGui.QCheckBox('Auto reset')
         self.cb_reset_cmap.setCheckState(QtCore.Qt.Checked)
         hbox_gamma1.addWidget(self.cb_reset_cmap)
 
@@ -381,15 +381,18 @@ class QTPlot(QtGui.QMainWindow):
 
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
-
-        self.resize(400, 600)
-        self.move(100, 100)
-
+        
         self.setAcceptDrops(True)
-
+        
+        self.resize(450, 600)
+        self.move(100, 100)
+        self.show()
+        self.linecut.resize(500, 400)
+        self.linecut.move(self.width()+115, 100)
+        self.operations.resize(400, 200)
+        self.operations.move(self.width()+115, 545)
         self.linecut.show()
         self.operations.show()
-        self.show()
         
     def update_ui(self, opening_state=False):
         """

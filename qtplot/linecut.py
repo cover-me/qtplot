@@ -174,9 +174,6 @@ class Linecut(QtGui.QDialog):
         layout.addLayout(hbox_style)
         self.setLayout(layout)
 
-        self.resize(500, 400)
-        self.move(520, 100)
-
     def populate_ui(self):
         profile = self.main.profile_settings
 
