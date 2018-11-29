@@ -24,6 +24,7 @@ class ExportWidget(QtGui.QWidget):
         self.fig, self.ax = plt.subplots()
         self.filenames = []
         self.cb = None
+        self.userDict={}
 
         self.init_ui()
 
@@ -187,6 +188,8 @@ class ExportWidget(QtGui.QWidget):
         self.cb_cmd.addItem("self.le_ans.setText('%s %s'%(self.main.width(),self.main.height()))")
         self.cb_cmd.addItem("self.main.resize(500,700)")
         self.cb_cmd.addItem("plt.text(1,0,'(%s %s %s) (%s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text(),self.main.width(),self.main.height()),verticalalignment='bottom',horizontalalignment='right',transform=self.fig.transFigure,fontsize=10);self.canvas.draw()")
+        self.cb_cmd.addItem("self.populate_ui(force=True)")
+        self.cb_cmd.addItem("self.userDict={}")
 
         hbox_av.addWidget(self.cb_cmd)        
 
@@ -209,37 +212,36 @@ class ExportWidget(QtGui.QWidget):
         vbox.addLayout(grid2)
         vbox.addLayout(hbox_av)
 
-    def populate_ui(self):
-        profile = self.main.profile_settings
-        
-        if '<keep>' not in str(self.le_title.text()):
+    def populate_ui(self,force=False):
+        if force or '<keep>' not in str(self.le_title.text()):
+            profile = self.main.profile_settings
             self.le_title.setText(profile['title'])
-        self.le_dpi.setText(profile['DPI'])
-        self.cb_rasterize.setChecked(bool(profile['rasterize']))
-        
-        self.le_x_label.setText(profile['x_label'])
-        self.le_y_label.setText(profile['y_label'])
-        self.le_z_label.setText(profile['z_label'])
+            self.le_dpi.setText(profile['DPI'])
+            self.cb_rasterize.setChecked(bool(profile['rasterize']))
+            
+            self.le_x_label.setText(profile['x_label'])
+            self.le_y_label.setText(profile['y_label'])
+            self.le_z_label.setText(profile['z_label'])
 
-        self.le_x_format.setText(profile['x_format'])
-        self.le_y_format.setText(profile['y_format'])
-        self.le_z_format.setText(profile['z_format'])
+            self.le_x_format.setText(profile['x_format'])
+            self.le_y_format.setText(profile['y_format'])
+            self.le_z_format.setText(profile['z_format'])
 
-        self.le_x_div.setText(profile['x_div'])
-        self.le_y_div.setText(profile['y_div'])
-        self.le_z_div.setText(profile['z_div'])
+            self.le_x_div.setText(profile['x_div'])
+            self.le_y_div.setText(profile['y_div'])
+            self.le_z_div.setText(profile['z_div'])
 
-        self.le_font.setText(profile['font'])
-        self.le_width.setText(profile['width'])
-        # cb orient
+            self.le_font.setText(profile['font'])
+            self.le_width.setText(profile['width'])
+            # cb orient
 
-        self.le_font_size.setText(profile['font_size'])
-        self.le_height.setText(profile['height'])
-        # cb pos
+            self.le_font_size.setText(profile['font_size'])
+            self.le_height.setText(profile['height'])
+            # cb pos
 
-        self.cb_triangulation.setChecked(bool(profile['triangulation']))
-        self.cb_tripcolor.setChecked(bool(profile['tripcolor']))
-        self.cb_linecut.setChecked(bool(profile['linecut']))
+            self.cb_triangulation.setChecked(bool(profile['triangulation']))
+            self.cb_tripcolor.setChecked(bool(profile['tripcolor']))
+            self.cb_linecut.setChecked(bool(profile['linecut']))
 
     def keyPressEvent(self, e):#seems not work....
         if e.key() == QtCore.Qt.Key_Return:
@@ -262,6 +264,8 @@ class ExportWidget(QtGui.QWidget):
             '<winSize>':'(%s %s)'%(self.main.width(),self.main.height())
         }
         for old, new in conversions.items():
+            s = s.replace(old, new)
+        for old, new in self.userDict.items():
             s = s.replace(old, new)
         for key, item in self.main.dat_file.qtlab_settings.items():
             if isinstance(item, dict):
