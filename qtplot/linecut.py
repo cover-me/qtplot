@@ -74,29 +74,29 @@ class Linecut(QtGui.QDialog):
 
         hbox_export = QtGui.QHBoxLayout()
 
-        self.cb_reset_cmap = QtGui.QCheckBox('Reset on plot')
+        self.cb_reset_cmap = QtGui.QCheckBox('Auto reset')
         self.cb_reset_cmap.setCheckState(QtCore.Qt.Checked)
         hbox_export.addWidget(self.cb_reset_cmap)
 
-        self.b_save = QtGui.QPushButton('Copy data', self)
-        self.b_save.clicked.connect(self.on_data_to_clipboard)
-        hbox_export.addWidget(self.b_save)
-
-        self.b_copy = QtGui.QPushButton('Copy figure', self)
+        self.b_copy = QtGui.QPushButton('Copy', self)
         self.b_copy.clicked.connect(self.on_figure_to_clipboard)
         QtGui.QShortcut(QtGui.QKeySequence("Ctrl+C"),
                         self, self.on_figure_to_clipboard)
         hbox_export.addWidget(self.b_copy)
 
-        self.b_to_ppt = QtGui.QPushButton('To PPT (Win)', self)
+        self.b_to_ppt = QtGui.QPushButton('To PPT', self)
         self.b_to_ppt.clicked.connect(self.on_to_ppt)
         hbox_export.addWidget(self.b_to_ppt)
         
-        self.b_to_word = QtGui.QPushButton('To Word (Win)', self)
+        self.b_to_word = QtGui.QPushButton('To Word', self)
         self.b_to_word.clicked.connect(self.on_to_word)
         hbox_export.addWidget(self.b_to_word)
 
-        self.b_save_dat = QtGui.QPushButton('Save data...', self)
+        self.b_save = QtGui.QPushButton('Copy data', self)
+        self.b_save.clicked.connect(self.on_data_to_clipboard)
+        hbox_export.addWidget(self.b_save)
+
+        self.b_save_dat = QtGui.QPushButton('Save data', self)
         self.b_save_dat.clicked.connect(self.on_save)
         hbox_export.addWidget(self.b_save_dat)
 
@@ -129,7 +129,7 @@ class Linecut(QtGui.QDialog):
         # Lines
         hbox_style = QtGui.QHBoxLayout()
 
-        hbox_style.addWidget(QtGui.QLabel('Line style'))
+        hbox_style.addWidget(QtGui.QLabel('Line'))
         self.cb_linestyle = QtGui.QComboBox(self)
         self.cb_linestyle.addItems(['None', 'solid', 'dashed', 'dotted'])
         hbox_style.addWidget(self.cb_linestyle)
@@ -139,7 +139,7 @@ class Linecut(QtGui.QDialog):
         hbox_style.addWidget(self.le_linewidth)
 
         # Markers
-        hbox_style.addWidget(QtGui.QLabel('Marker style'))
+        hbox_style.addWidget(QtGui.QLabel('Marker'))
         self.cb_markerstyle = QtGui.QComboBox(self)
         self.cb_markerstyle.addItems(['None', '.', 'o', 'x'])
         hbox_style.addWidget(self.cb_markerstyle)
@@ -160,7 +160,12 @@ class Linecut(QtGui.QDialog):
         hbox_plot = QtGui.QHBoxLayout()
         hbox_plot.addWidget(self.canvas)
         hbox_plot.addWidget(self.row_tree)
-
+        
+        for i in range(hbox_export.count()):
+            w = hbox_export.itemAt(i).widget()
+            if isinstance(w, QtGui.QPushButton):
+                w.setMinimumWidth(20)
+                
         layout = QtGui.QVBoxLayout()
         layout.addWidget(self.toolbar)
         layout.addLayout(hbox_plot)
@@ -169,8 +174,8 @@ class Linecut(QtGui.QDialog):
         layout.addLayout(hbox_style)
         self.setLayout(layout)
 
-        self.resize(700, 500)
-        self.move(630, 100)
+        self.resize(500, 400)
+        self.move(520, 100)
 
     def populate_ui(self):
         profile = self.main.profile_settings

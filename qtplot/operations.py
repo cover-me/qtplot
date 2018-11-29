@@ -251,7 +251,7 @@ class Operations(QtGui.QDialog):
         self.setLayout(main_vbox)
 
         self.resize(400, 200)
-        self.move(630, 640)
+        self.move(520, 540)
 
     def load(self, filename):
         self.queue.clear()

@@ -382,7 +382,7 @@ class QTPlot(QtGui.QMainWindow):
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
 
-        self.resize(400, 700)
+        self.resize(400, 600)
         self.move(100, 100)
 
         self.setAcceptDrops(True)
