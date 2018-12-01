@@ -203,16 +203,29 @@ class ExportWidget(QtGui.QWidget):
         # self.le_ans.setEnabled(False)
         self.le_ans.setMaximumWidth(60)
         hbox_av.addWidget(self.le_ans)
-        
+
         vbox = QtGui.QVBoxLayout(self)
         vbox.addWidget(self.toolbar)
         vbox.addWidget(self.canvas)
-        vbox.addLayout(hbox)
-        vbox.addLayout(grid_general)
-        vbox.addLayout(grid)
-        vbox.addLayout(grid2)
-        vbox.addLayout(hbox2)
-        vbox.addLayout(hbox_av)
+        
+        vbox2 = QtGui.QVBoxLayout(self)       
+        vbox2.addLayout(hbox)
+        vbox2.addLayout(grid_general)
+        vbox2.addLayout(grid)
+        vbox2.addLayout(grid2)
+        vbox2.addLayout(hbox2)
+        vbox2.addLayout(hbox_av)
+        s_widget = QtGui.QWidget() 
+        s_widget.setLayout(vbox2)
+        s_area = QtGui.QScrollArea()
+        s_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        s_area.setFixedHeight(s_widget.sizeHint().height())
+        s_area.setFrameStyle(QtGui.QScrollArea.NoFrame)
+        s_area.setWidgetResizable(True)
+        s_area.setWidget(s_widget)
+        
+        vbox.addWidget(s_area)
+
 
     def populate_ui(self,force=False):
         if force or '<keep>' not in str(self.le_title.text()):
