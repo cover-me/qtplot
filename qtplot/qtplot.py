@@ -42,7 +42,7 @@ PROFILE_DEFAULTS = OrderedDict((
     ('x_div', '1e0'),
     ('y_div', '1e0'),
     ('z_div', '1e0'),
-    ('font', 'Vera Sans'),
+    ('font', 'DejaVu Sans'),
     ('font_size', '12'),
     ('width', '3'),
     ('height', '3'),
@@ -342,6 +342,7 @@ class QTPlot(QtGui.QMainWindow):
 
 
         self.b_reset = QtGui.QPushButton('Reset')
+        self.b_reset.setMinimumWidth(50)
         self.b_reset.clicked.connect(self.on_cm_reset)
         hbox_gamma1.addWidget(self.b_reset)
 
@@ -357,13 +358,12 @@ class QTPlot(QtGui.QMainWindow):
         for i in range(hbox2.count()):
             w = hbox2.itemAt(i).widget()
             if isinstance(w, QtGui.QPushButton):
-                w.setMinimumWidth(20)
+                w.setMinimumWidth(50)
 
-        # Main vertical box
+        # Main box
         vbox = QtGui.QVBoxLayout(self.view_widget)
-        vbox.addWidget(self.canvas.native)
-        
-        vbox2 = QtGui.QVBoxLayout(self)    
+        vbox2 = QtGui.QVBoxLayout()   
+        vbox2.addWidget(self.canvas.native)
         vbox2.addLayout(hbox)
         vbox2.addLayout(hbox2)
         vbox2.addLayout(r_hbox)
@@ -375,19 +375,20 @@ class QTPlot(QtGui.QMainWindow):
         s_widget.setLayout(vbox2)
         s_area = QtGui.QScrollArea()
         s_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        s_area.setFixedHeight(s_widget.sizeHint().height())
+        #s_area.setFixedHeight(s_widget.sizeHint().height())
         s_area.setFrameStyle(QtGui.QScrollArea.NoFrame)
         s_area.setWidgetResizable(True)
         s_area.setWidget(s_widget)
         vbox.addWidget(s_area)
         
         self.status_bar = QtGui.QStatusBar()
-        self.l_position = QtGui.QLabel()
-        self.status_bar.addWidget(self.l_position, 1)
-        self.l_slope = QtGui.QLabel('Slope: -')
+        self.l_position = QtGui.QLabel('(x, y)')
+        self.status_bar.addWidget(self.l_position,1)
+        self.l_slope = QtGui.QLabel('(k, 1/k)')
         self.status_bar.addWidget(self.l_slope)
-        self.load_time = QtGui.QLabel()
-        self.status_bar.addWidget(self.load_time)        
+        self.load_time = QtGui.QLabel('t (t_max)')
+        self.status_bar.addWidget(self.load_time)     
+        self.status_bar.setMinimumWidth(50)
         self.setStatusBar(self.status_bar)
 
         self.main_widget.setFocus()

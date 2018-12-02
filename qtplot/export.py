@@ -14,10 +14,14 @@ class ExportWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self)
 
         # Set some matplotlib font settings
+        _fontmap = { 'rm'  : 'DejaVu Sans',
+                    'it'  : 'DejaVu Sans:italic',
+                    'bf'  : 'DejaVu Sans:weight=bold',
+                    'sf'  : 'DejaVu Sans',
+                    'tt'  : 'DejaVu Sans Mono',
+                    'cal' : 'DejaVu Sans',}#took from matplotlib 3, seems useless
         mpl.rcParams['mathtext.fontset'] = 'custom'
-        mpl.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
-        mpl.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
-        mpl.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
+        mpl.rc('mathtext',**_fontmap)
 
         self.main = main
 
@@ -129,17 +133,17 @@ class ExportWidget(QtGui.QWidget):
         grid2 = QtGui.QGridLayout()
         # Font
         grid2.addWidget(QtGui.QLabel('Font'), 5, 1)
-        self.le_font = QtGui.QLineEdit('Vera Sans')
+        self.le_font = QtGui.QLineEdit('DejaVu Sans')
         grid2.addWidget(self.le_font, 5, 2)
 
         grid2.addWidget(QtGui.QLabel('Size'), 5, 3)
         self.le_font_size = QtGui.QLineEdit('12')
-        grid2.addWidget(self.le_font_size, 6, 2)
+        grid2.addWidget(self.le_font_size, 5, 4)
 
         # Figure size
         grid2.addWidget(QtGui.QLabel('Width'), 6, 1)
         self.le_width = QtGui.QLineEdit('3')
-        grid2.addWidget(self.le_width, 5, 4)
+        grid2.addWidget(self.le_width, 6, 2)
 
         grid2.addWidget(QtGui.QLabel('Height'), 6, 3)
         self.le_height = QtGui.QLineEdit('3')
@@ -180,17 +184,18 @@ class ExportWidget(QtGui.QWidget):
         self.cb_cmd.setMinimumContentsLength(5)
         self.cb_cmd.setEditable(True)
         self.cb_cmd.addItem("")
-        self.cb_cmd.addItem("plt.plot([0,1],[0,0],'yellow',linewidth=2);self.canvas.draw()")
-        self.cb_cmd.addItem("plt.gca().lines[-1].remove();self.canvas.draw()")
+        self.cb_cmd.addItem("plt.plot([0,1],[0,0],'yellow',linewidth=2);self.canvas.draw()#Draw a line")
+        self.cb_cmd.addItem("plt.gca().lines[-1].remove();self.canvas.draw()#Remove last line")
         self.cb_cmd.addItem("plt.autoscale(True, 'both', tight=None);self.canvas.draw()")
         self.cb_cmd.addItem("plt.gca().set_xlim(None, None);self.canvas.draw()")
         self.cb_cmd.addItem("plt.tight_layout();self.canvas.draw()")
         self.cb_cmd.addItem("plt.subplots_adjust(0.125,0.1,0.9,0.9);self.canvas.draw()")
         self.cb_cmd.addItem("self.le_ans.setText('%s %s'%(self.main.width(),self.main.height()))")
-        self.cb_cmd.addItem("self.main.resize(500,700)")
-        self.cb_cmd.addItem("plt.text(1,0,'(%s %s %s) (%s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text(),self.main.width(),self.main.height()),verticalalignment='bottom',horizontalalignment='right',transform=self.fig.transFigure,fontsize=10);self.canvas.draw()")
+        self.cb_cmd.addItem("self.main.resize(450,600)#Resize window")
+        self.cb_cmd.addItem("plt.text(1,0,'(%s %s %s) (%s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text(),self.main.width(),self.main.height()),verticalalignment='bottom',horizontalalignment='right',transform=self.fig.transFigure,fontsize=10);self.canvas.draw()#Add gamma info to plot")
         self.cb_cmd.addItem("self.populate_ui(force=True)")
         self.cb_cmd.addItem("self.userDict={}")
+        self.cb_cmd.addItem("plt.gca();dpi=float(self.le_dpi.text());w=self.main.width();h=self.main.height();w1,h1=[x*self.fig.dpi for x in self.fig.get_size_inches()];w2=float(self.le_width.text())*dpi;h2=float(self.le_height.text())*dpi;self.main.resize(w+w2-w1,h+h2-h1);self.le_ans.setText('%s'%self.fig.get_size_inches())#Resize canvas")
 
         hbox_av.addWidget(self.cb_cmd)        
 
@@ -203,12 +208,11 @@ class ExportWidget(QtGui.QWidget):
         # self.le_ans.setEnabled(False)
         self.le_ans.setMaximumWidth(60)
         hbox_av.addWidget(self.le_ans)
-
         vbox = QtGui.QVBoxLayout(self)
         vbox.addWidget(self.toolbar)
         vbox.addWidget(self.canvas)
         
-        vbox2 = QtGui.QVBoxLayout(self)       
+        vbox2 = QtGui.QVBoxLayout()       
         vbox2.addLayout(hbox)
         vbox2.addLayout(grid_general)
         vbox2.addLayout(grid)
@@ -223,7 +227,6 @@ class ExportWidget(QtGui.QWidget):
         s_area.setFrameStyle(QtGui.QScrollArea.NoFrame)
         s_area.setWidgetResizable(True)
         s_area.setWidget(s_widget)
-        
         vbox.addWidget(s_area)
 
 
@@ -295,13 +298,15 @@ class ExportWidget(QtGui.QWidget):
                 'family': str(self.le_font.text()),
                 'size': int(str(self.le_font_size.text()))
             }
-
             mpl.rc('font', **font)
 
             # Clear the plot
             if self.cb_hold.checkState() == QtCore.Qt.Unchecked:
                 self.filenames = []
                 self.ax.clear()
+                new_dpi = float(self.le_dpi.text())
+                if self.fig.dpi != new_dpi:
+                    self.fig.set_dpi(new_dpi)
             self.filenames.append(os.path.splitext(self.format_label('<filename>'))[0])
             # Get the data and colormap
             x, y, z = self.main.data.get_pcolor()
@@ -382,11 +387,15 @@ class ExportWidget(QtGui.QWidget):
             self.fig.tight_layout()
 
             self.canvas.draw()
+            self.le_dpi.setText('%s'%self.fig.dpi)
+            w,h = self.fig.get_size_inches()
+            self.le_width.setText('%s'%w)
+            self.le_height.setText('%s'%h)
 
     def on_copy(self):
         """ Copy the current plot to the clipboard """
         buf = io.BytesIO()
-        self.fig.savefig(buf,dpi=int(self.le_dpi.text()))
+        self.fig.savefig(buf,dpi=float(self.le_dpi.text()))
         img = QtGui.QImage.fromData(buf.getvalue())
         QtGui.QApplication.clipboard().setImage(img)
         buf.close()
@@ -455,7 +464,7 @@ class ExportWidget(QtGui.QWidget):
             self.fig.set_size_inches(float(self.le_width.text()),
                                      float(self.le_height.text()))
 
-            dpi = int(self.le_dpi.text())
+            dpi = float(self.le_dpi.text())
 
             self.fig.savefig(filename, dpi=dpi, bbox_inches='tight')
             self.fig.set_size_inches(previous_size)

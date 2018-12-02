@@ -111,7 +111,7 @@ class Canvas(scene.SceneCanvas):
         self.data_program = gloo.Program(data_vert, data_frag)
 
         path = os.path.dirname(os.path.realpath(__file__))
-        path = os.path.join(path, 'colormaps\\transform\\Seismic.npy')
+        path = os.path.join(path, 'colormaps'+os.path.sep+'transform'+os.path.sep+'Seismic.npy')
         self.colormap = Colormap(path)
 
         self.colorbar_program = gloo.Program(colormap_vert, colormap_frag)
@@ -342,7 +342,8 @@ class Canvas(scene.SceneCanvas):
             # Display slope and inverse slope in status bar
             dx = x - x_start
             dy = y - y_start
-            text = 'Slope: {:.3e}\tInv: {:.3e}'.format(dy / dx, dx / dy)
+            if dx!=0 and dy!=0:
+                text = '({:+.3e}, {:+.3e})'.format(dy / dx, dx / dy)
 
             self.parent.l_slope.setText(text)
 
@@ -381,7 +382,7 @@ class Canvas(scene.SceneCanvas):
 
                 if not np.isnan(x) and not np.isnan(y):
                     # Show the coordinates in the statusbar
-                    text = 'X: %.3e\tY: %.3e' % (x,y)
+                    text = '(%+.3e, %+.3e)' % (x,y)
                     self.parent.l_position.setText(text)
 
                     # If a mouse button was pressed, try to redraw linecut
