@@ -344,8 +344,7 @@ class Canvas(scene.SceneCanvas):
             dy = y - y_start
             if dx!=0 and dy!=0:
                 text = '({:+.3e}, {:+.3e})'.format(dy / dx, dx / dy)
-
-            self.parent.l_slope.setText(text)
+                self.parent.l_slope.setText(text)
 
     def on_mouse_press(self, event):
         self.draw_linecut(event, initial_press=True)
