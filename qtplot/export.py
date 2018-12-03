@@ -46,13 +46,13 @@ class ExportWidget(QtGui.QWidget):
         self.b_copy.clicked.connect(self.on_copy)
         hbox.addWidget(self.b_copy)
 
-        self.b_to_ppt = QtGui.QPushButton('To PPT', self)
-        self.b_to_ppt.clicked.connect(self.on_to_ppt)
-        hbox.addWidget(self.b_to_ppt)
-
-        self.b_to_word = QtGui.QPushButton('To word', self)
+        self.b_to_word = QtGui.QPushButton('Word', self)
         self.b_to_word.clicked.connect(self.on_to_word)
         hbox.addWidget(self.b_to_word)
+        
+        self.b_to_ppt = QtGui.QPushButton('PPT+', self)
+        self.b_to_ppt.clicked.connect(self.on_to_ppt)
+        hbox.addWidget(self.b_to_ppt)
 
         self.b_export = QtGui.QPushButton('Export', self)
         self.b_export.clicked.connect(self.on_export)
@@ -193,7 +193,7 @@ class ExportWidget(QtGui.QWidget):
         self.cb_cmd.addItem("self.le_ans.setText('%s %s'%(self.main.width(),self.main.height()))")
         self.cb_cmd.addItem("self.main.resize(450,600)#Resize window")
         self.cb_cmd.addItem("plt.text(1,0,'(%s %s %s) (%s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text(),self.main.width(),self.main.height()),verticalalignment='bottom',horizontalalignment='right',transform=self.fig.transFigure,fontsize=10);self.canvas.draw()#Add gamma info to plot")
-        self.cb_cmd.addItem("self.populate_ui(force=True)")
+        self.cb_cmd.addItem("self.populate_ui()#restore to last profile")
         self.cb_cmd.addItem("self.userDict={}")
         self.cb_cmd.addItem("plt.gca();dpi=float(self.le_dpi.text());w=self.main.width();h=self.main.height();w1,h1=[x*self.fig.dpi for x in self.fig.get_size_inches()];w2=float(self.le_width.text())*dpi;h2=float(self.le_height.text())*dpi;self.main.resize(w+w2-w1,h+h2-h1);self.le_ans.setText('%s'%self.fig.get_size_inches())#Resize canvas")
 
@@ -230,36 +230,38 @@ class ExportWidget(QtGui.QWidget):
         vbox.addWidget(s_area)
 
 
-    def populate_ui(self,force=False):
-        if force or '<keep>' not in str(self.le_title.text()):
-            profile = self.main.profile_settings
-            self.le_title.setText(profile['title'])
-            self.le_dpi.setText(profile['DPI'])
-            self.cb_rasterize.setChecked(bool(profile['rasterize']))
-            
-            self.le_x_label.setText(profile['x_label'])
-            self.le_y_label.setText(profile['y_label'])
-            self.le_z_label.setText(profile['z_label'])
+    def populate_ui(self):
+        profile = self.main.profile_settings
+        self.le_title.setText(profile['title'])
+        self.le_dpi.setText(profile['DPI'])
+        self.cb_rasterize.setChecked(bool(profile['rasterize']))
+        self.cb_hold.setChecked(bool(profile['hold']))
+        
+        self.le_x_label.setText(profile['x_label'])
+        self.le_y_label.setText(profile['y_label'])
+        self.le_z_label.setText(profile['z_label'])
 
-            self.le_x_format.setText(profile['x_format'])
-            self.le_y_format.setText(profile['y_format'])
-            self.le_z_format.setText(profile['z_format'])
+        self.le_x_format.setText(profile['x_format'])
+        self.le_y_format.setText(profile['y_format'])
+        self.le_z_format.setText(profile['z_format'])
 
-            self.le_x_div.setText(profile['x_div'])
-            self.le_y_div.setText(profile['y_div'])
-            self.le_z_div.setText(profile['z_div'])
+        self.le_x_div.setText(profile['x_div'])
+        self.le_y_div.setText(profile['y_div'])
+        self.le_z_div.setText(profile['z_div'])
 
-            self.le_font.setText(profile['font'])
-            self.le_width.setText(profile['width'])
-            # cb orient
+        self.le_font.setText(profile['font'])
+        self.le_width.setText(profile['width'])
+        index = self.cb_cb_orient.findText(profile['cb_orient'])
+        if index != -1:
+            self.cb_cb_orient.setCurrentIndex(index)
 
-            self.le_font_size.setText(profile['font_size'])
-            self.le_height.setText(profile['height'])
-            # cb pos
+        self.le_font_size.setText(profile['font_size'])
+        self.le_height.setText(profile['height'])
+        self.le_cb_pos.setText(profile['cb_pos'])
 
-            self.cb_triangulation.setChecked(bool(profile['triangulation']))
-            self.cb_tripcolor.setChecked(bool(profile['tripcolor']))
-            self.cb_linecut.setChecked(bool(profile['linecut']))
+        self.cb_triangulation.setChecked(bool(profile['triangulation']))
+        self.cb_tripcolor.setChecked(bool(profile['tripcolor']))
+        self.cb_linecut.setChecked(bool(profile['linecut']))
 
     def keyPressEvent(self, e):#seems not work....
         if e.key() == QtCore.Qt.Key_Return:
@@ -276,7 +278,6 @@ class ExportWidget(QtGui.QWidget):
             '<x>': self.main.x_name,
             '<y>': self.main.y_name,
             '<z>': self.main.data_name,
-            '<keep>':'',
             '<return>':'\n',
             '<gamma>':'(%s %s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text()),
             '<winSize>':'(%s %s)'%(self.main.width(),self.main.height())
@@ -405,22 +406,35 @@ class ExportWidget(QtGui.QWidget):
         try:
             import win32com.client
             app = win32com.client.GetActiveObject('PowerPoint.Application')
-            app.WindowState=2 #minimize the window so it will come back to the front later
-        except ImportError:
+        except:
             print('ERROR: win32com library missing or no ppt file opened')
             return
 
         # First, copy to the clipboard
         self.on_copy()
-
+        aw = app.ActiveWindow
+        aw.WindowState=2 #minimize the window so it will come back to the front later            
+ 
         # Get the current slide and paste the plot
-        slide = app.ActiveWindow.View.Slide
+        slide = aw.View.Slide
         shape = slide.Shapes.Paste()
-
+        aw.WindowState=1 #normal the window size. Now it comes back to the front
+        
         # Add a hyperlink to the data location to easily open the data again
-        if self.main.abs_filename:
-            shape.ActionSettings[0].Hyperlink.Address = self.main.abs_filename
-        app.WindowState=1 #normal the window size. Now it comes back to the front
+        pptpath = aw.Presentation.FullName
+        if self.main.abs_filename and os.path.isfile(pptpath):#if the ppt file has never been saved, nothing will be done
+            # change the folder temply
+            old1 = self.main.operations_dir
+            old2 = self.main.profiles_dir
+            self.main.operations_dir = os.path.splitext(pptpath)[0]#want a folder with the same name as .ppt file
+            self.main.profiles_dir = self.main.operations_dir
+            if not os.path.isdir(self.main.operations_dir):
+                os.mkdir(self.main.operations_dir)
+            self.main.save_state(self.main.name+'.ini')
+            # restore them back
+            self.main.operations_dir = old1
+            self.main.profiles_dir = old2
+            # shape.ActionSettings[0].Hyperlink.Address = pp
 
     def on_to_word(self):
         """ Some win32 COM magic to interact with word """

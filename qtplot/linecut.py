@@ -75,7 +75,7 @@ class Linecut(QtGui.QDialog):
         hbox_export = QtGui.QHBoxLayout()
 
         self.cb_reset_cmap = QtGui.QCheckBox('Auto reset')
-        self.cb_reset_cmap.setCheckState(QtCore.Qt.Checked)
+        # self.cb_reset_cmap.setCheckState(QtCore.Qt.Checked)
         hbox_export.addWidget(self.cb_reset_cmap)
 
         self.b_copy = QtGui.QPushButton('Copy', self)
@@ -110,11 +110,11 @@ class Linecut(QtGui.QDialog):
         hbox_linecuts.addWidget(QtGui.QLabel('Linecuts'))
 
         self.cb_incremental = QtGui.QCheckBox('Incremental')
-        self.cb_incremental.setCheckState(QtCore.Qt.Unchecked)
+        # self.cb_incremental.setCheckState(QtCore.Qt.Unchecked)
         hbox_linecuts.addWidget(self.cb_incremental)
         
         self.cb_showLegend = QtGui.QCheckBox('Legend')
-        self.cb_showLegend.setCheckState(QtCore.Qt.Checked)
+        # self.cb_showLegend.setCheckState(QtCore.Qt.Checked)
         hbox_linecuts.addWidget(self.cb_showLegend)
 
         hbox_linecuts.addWidget(QtGui.QLabel('Offset:'))
@@ -149,7 +149,7 @@ class Linecut(QtGui.QDialog):
         hbox_style.addWidget(self.le_markersize)
 
         self.cb_include_z = QtGui.QCheckBox('Include Z')
-        self.cb_include_z.setCheckState(QtCore.Qt.Checked)
+        # self.cb_include_z.setCheckState(QtCore.Qt.Checked)
         hbox_style.addWidget(self.cb_include_z)
 
         self.row_tree = QtGui.QTreeWidget(self)
@@ -176,7 +176,12 @@ class Linecut(QtGui.QDialog):
 
     def populate_ui(self):
         profile = self.main.profile_settings
-
+        
+        self.cb_reset_cmap.setChecked(bool(profile['auto_reset_line']))           
+        self.cb_incremental.setChecked(bool(profile['incremental']))         
+        self.cb_showLegend.setChecked(bool(profile['legend']))        
+        self.le_offset.setText(profile['offset'])
+        
         idx = self.cb_linestyle.findText(profile['line_style'])
         self.cb_linestyle.setCurrentIndex(idx)
         self.le_linewidth.setText(profile['line_width'])
@@ -184,6 +189,7 @@ class Linecut(QtGui.QDialog):
         idx = self.cb_markerstyle.findText(profile['marker_style'])
         self.cb_markerstyle.setCurrentIndex(idx)
         self.le_markersize.setText(profile['marker_size'])
+        self.cb_include_z.setChecked(bool(profile['incl_z']))
 
     def get_line_kwargs(self):
         return {
