@@ -163,3 +163,15 @@ Let's assume there is another program taking data and saving data into a .dat fi
 Fix the strange behaviour when plot the second line.
 
 Speed up for realtime plotting (log, data,...)
+
+Abitary linecut doesn't show up in export.
+
+3D data support.
+
+Do not let linecuts and operations always on top of the main window.
+
+...
+
+## Newer screenshots
+![alt tag](screenshot2.png)
+![alt tag](screenshot3.png)
