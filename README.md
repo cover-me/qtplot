@@ -29,6 +29,8 @@ Install other dependencies with:
 
 Executables will be generated in the `/Scripts` folder of your Python environment with the names `qtplot.<exe>` and `qtplot-console.<exe>`. Associate one of these with `*.dat` files for them to be automatically opened in qtplot.
 
+Keeping updated may not be a good idea. For example, there seems to be some issues with qtplot after I updated matplotlib to 3 from 1.5.3 in Ubuntu. 
+
 ### Install qtplot with WinPython (Windows Systems)
 WinPython is a free open-source portable distribution of Python.
 
