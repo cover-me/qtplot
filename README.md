@@ -6,7 +6,9 @@ This is a project forked from Rubenknex/qtplot. The original one is already a ve
 
 * Add a tcp server that can be talked by external programs, making it possible to show real-time diagrams automatically.
 * Add some features that the plotting program Spyview has: left and right hot keys to toggle between data files; Show filter information on the diagrams.
-* Other features: Improve the "incremental" mode for better hystersis diagrams with multiple lines; Add filters that subtract Rin and normalize G/R to quantuam conductance/resistance respectively; Show multiple 2D graphs on a signle canvas.
+* Auto save drawing parameters when exported to PPT. Drag and drop .ini files for reproducing figures.
+* A place to run python commands directly.
+* Other features: Improve the "incremental" mode for better hystersis diagrams with multiple lines; Add filters that subtract Rin and normalize G/R to quantuam conductance/resistance respectively; Show multiple 2D graphs on a signle canvas. Optimize the GUI.
 * ...
 
 
@@ -28,6 +30,8 @@ Install other dependencies with:
 `conda install numpy scipy pandas matplotlib pyqt=4`
 
 Executables will be generated in the `/Scripts` folder of your Python environment with the names `qtplot.<exe>` and `qtplot-console.<exe>`. Associate one of these with `*.dat` files for them to be automatically opened in qtplot.
+
+Keeping updated may not be a good idea. For example, there seems to be some issues with qtplot after I updated matplotlib to 3 from 1.5.3 in Ubuntu. 
 
 ### Install qtplot with WinPython (Windows Systems)
 WinPython is a free open-source portable distribution of Python.
@@ -161,3 +165,15 @@ Let's assume there is another program taking data and saving data into a .dat fi
 Fix the strange behaviour when plot the second line.
 
 Speed up for realtime plotting (log, data,...)
+
+Abitary linecut doesn't show up in export.
+
+3D data support.
+
+Do not let linecuts and operations always on top of the main window.
+
+...
+
+## Newer screenshots
+![alt tag](screenshot2.png)
+![alt tag](screenshot3.png)

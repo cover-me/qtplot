@@ -28,21 +28,29 @@ def eng_format(number, significance):
 class FixedOrderFormatter(ScalarFormatter):
     """Format numbers using engineering notation."""
     def __init__(self, format='%.0f', division=1e0):
-        ScalarFormatter.__init__(self, useOffset=None, useMathText=None)
+        ScalarFormatter.__init__(self, useOffset=False, useMathText=True)
         self.format = format
         self.division = division
 
     def __call__(self, x, pos=None):
-        if x == 0:
-            return '0'
-
         exp = self.orderOfMagnitude
-
-        return self.format % ((x / self.division) / (10 ** exp))
+        format = self.format
+        if format.endswith('e'):
+            format = format[:-1]+'f'
+        return format % ((x / self.division) / (10 ** exp))
 
     def _set_format(self, vmin, vmax):
         pass
 
     def _set_orderOfMagnitude(self, range):
-        exp = np.floor(np.log10(range / 4 / self.division))
-        self.orderOfMagnitude = exp - (exp % 3)
+        exp_r = np.floor(np.log10(range / self.division)) if range!=0 else 0
+        locs = np.abs(self.locs)
+        val = max(locs[0],locs[-1])
+        exp_max = np.floor(np.log10(val / self.division)) if val!=0 else 0
+        exp = exp_r if self.offset else exp_max
+        if self.format.endswith('f'):
+            self.orderOfMagnitude = exp - (exp % 3)
+        elif self.format.endswith('e'):
+            self.orderOfMagnitude = exp_max
+        else:
+            self.orderOfMagnitude = 0

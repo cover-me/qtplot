@@ -14,16 +14,21 @@ class ExportWidget(QtGui.QWidget):
         QtGui.QWidget.__init__(self)
 
         # Set some matplotlib font settings
+        _fontmap = { 'rm'  : 'DejaVu Sans',
+                    'it'  : 'DejaVu Sans:italic',
+                    'bf'  : 'DejaVu Sans:weight=bold',
+                    'sf'  : 'DejaVu Sans',
+                    'tt'  : 'DejaVu Sans Mono',
+                    'cal' : 'DejaVu Sans',}#took from matplotlib 3, seems useless
         mpl.rcParams['mathtext.fontset'] = 'custom'
-        mpl.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
-        mpl.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
-        mpl.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
+        mpl.rc('mathtext',**_fontmap)
 
         self.main = main
 
         self.fig, self.ax = plt.subplots()
         self.filenames = []
         self.cb = None
+        self.userDict={}
 
         self.init_ui()
 
@@ -37,22 +42,27 @@ class ExportWidget(QtGui.QWidget):
         self.b_update.clicked.connect(self.on_update)
         hbox.addWidget(self.b_update)
 
-        self.b_copy = QtGui.QPushButton('To clipboard', self)
+        self.b_copy = QtGui.QPushButton('Copy', self)
         self.b_copy.clicked.connect(self.on_copy)
         hbox.addWidget(self.b_copy)
 
-        self.b_to_ppt = QtGui.QPushButton('To PPT (Win)', self)
+        self.b_to_word = QtGui.QPushButton('Word', self)
+        self.b_to_word.clicked.connect(self.on_to_word)
+        hbox.addWidget(self.b_to_word)
+        
+        self.b_to_ppt = QtGui.QPushButton('PPT+', self)
         self.b_to_ppt.clicked.connect(self.on_to_ppt)
         hbox.addWidget(self.b_to_ppt)
 
-        self.b_to_word = QtGui.QPushButton('To word (Win)', self)
-        self.b_to_word.clicked.connect(self.on_to_word)
-        hbox.addWidget(self.b_to_word)
-
-        self.b_export = QtGui.QPushButton('Export...', self)
+        self.b_export = QtGui.QPushButton('Export', self)
         self.b_export.clicked.connect(self.on_export)
         hbox.addWidget(self.b_export)
-        
+
+        for i in range(hbox.count()):
+            w = hbox.itemAt(i).widget()
+            if isinstance(w, QtGui.QPushButton):
+                w.setMinimumWidth(20)
+                
         grid_general = QtGui.QGridLayout()
 
         grid_general.addWidget(QtGui.QLabel('Title'), 1, 1)
@@ -121,20 +131,19 @@ class ExportWidget(QtGui.QWidget):
         grid.addWidget(self.le_z_div, 4, 6)
 
         grid2 = QtGui.QGridLayout()
-
         # Font
         grid2.addWidget(QtGui.QLabel('Font'), 5, 1)
-        self.le_font = QtGui.QLineEdit('Vera Sans')
+        self.le_font = QtGui.QLineEdit('DejaVu Sans')
         grid2.addWidget(self.le_font, 5, 2)
 
-        grid2.addWidget(QtGui.QLabel('Font size'), 6, 1)
+        grid2.addWidget(QtGui.QLabel('Size'), 5, 3)
         self.le_font_size = QtGui.QLineEdit('12')
-        grid2.addWidget(self.le_font_size, 6, 2)
+        grid2.addWidget(self.le_font_size, 5, 4)
 
         # Figure size
-        grid2.addWidget(QtGui.QLabel('Width'), 5, 3)
+        grid2.addWidget(QtGui.QLabel('Width'), 6, 1)
         self.le_width = QtGui.QLineEdit('3')
-        grid2.addWidget(self.le_width, 5, 4)
+        grid2.addWidget(self.le_width, 6, 2)
 
         grid2.addWidget(QtGui.QLabel('Height'), 6, 3)
         self.le_height = QtGui.QLineEdit('3')
@@ -144,45 +153,49 @@ class ExportWidget(QtGui.QWidget):
         grid2.addWidget(QtGui.QLabel('CB Orient'), 5, 5)
         self.cb_cb_orient = QtGui.QComboBox()
         self.cb_cb_orient.addItems(['vertical', 'horizontal'])
+        self.cb_cb_orient.setMinimumWidth(20)
         grid2.addWidget(self.cb_cb_orient, 5, 6)
 
         grid2.addWidget(QtGui.QLabel('CB Pos'), 6, 5)
         self.le_cb_pos = QtGui.QLineEdit('0 0 1 1')
         grid2.addWidget(self.le_cb_pos, 6, 6)
-
+        
+        hbox2 = QtGui.QHBoxLayout()
         # Additional things to plot
-        grid2.addWidget(QtGui.QLabel('Triangulation'), 7, 1)
+        hbox2.addWidget(QtGui.QLabel('Triangulation'))
         self.cb_triangulation = QtGui.QCheckBox('')
-        grid2.addWidget(self.cb_triangulation, 7, 2)
+        hbox2.addWidget(self.cb_triangulation)
 
-        grid2.addWidget(QtGui.QLabel('Tripcolor'), 7, 3)
+        hbox2.addWidget(QtGui.QLabel('Tripcolor'))
         self.cb_tripcolor = QtGui.QCheckBox('')
-        grid2.addWidget(self.cb_tripcolor, 7, 4)
+        hbox2.addWidget(self.cb_tripcolor)
 
-        grid2.addWidget(QtGui.QLabel('Linecut'), 7, 5)
+        hbox2.addWidget(QtGui.QLabel('Linecut'))
         self.cb_linecut = QtGui.QCheckBox('')
-        grid2.addWidget(self.cb_linecut, 7, 6)
-              
+        hbox2.addWidget(self.cb_linecut)
+            
         # Advance tools
         hbox_av = QtGui.QHBoxLayout()
         
         lb_cmd = QtGui.QLabel('Cmd')
-        lb_cmd.setMaximumWidth(20)
         hbox_av.addWidget(lb_cmd)
         
         self.cb_cmd =  QtGui.QComboBox()
         self.cb_cmd.setMinimumContentsLength(5)
         self.cb_cmd.setEditable(True)
         self.cb_cmd.addItem("")
-        self.cb_cmd.addItem("plt.plot([0,1],[0,0],'yellow',linewidth=2);self.canvas.draw()")
-        self.cb_cmd.addItem("plt.gca().lines[-1].remove();self.canvas.draw()")
+        self.cb_cmd.addItem("plt.plot([0,1],[0,0],'yellow',linewidth=2);self.canvas.draw()#Draw a line")
+        self.cb_cmd.addItem("plt.gca().lines[-1].remove();self.canvas.draw()#Remove last line")
         self.cb_cmd.addItem("plt.autoscale(True, 'both', tight=None);self.canvas.draw()")
         self.cb_cmd.addItem("plt.gca().set_xlim(None, None);self.canvas.draw()")
         self.cb_cmd.addItem("plt.tight_layout();self.canvas.draw()")
         self.cb_cmd.addItem("plt.subplots_adjust(0.125,0.1,0.9,0.9);self.canvas.draw()")
         self.cb_cmd.addItem("self.le_ans.setText('%s %s'%(self.main.width(),self.main.height()))")
-        self.cb_cmd.addItem("self.main.resize(500,700)")
-        self.cb_cmd.addItem("plt.text(1,0,'(%s %s %s) (%s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text(),self.main.width(),self.main.height()),verticalalignment='bottom',horizontalalignment='right',transform=self.fig.transFigure,fontsize=10);self.canvas.draw()")
+        self.cb_cmd.addItem("self.main.resize(450,600)#Resize window")
+        self.cb_cmd.addItem("plt.text(1,0,'(%s %s %s) (%s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text(),self.main.width(),self.main.height()),verticalalignment='bottom',horizontalalignment='right',transform=self.fig.transFigure,fontsize=10);self.canvas.draw()#Add gamma info to plot")
+        self.cb_cmd.addItem("self.populate_ui()#restore to last profile")
+        self.cb_cmd.addItem("self.userDict={}")
+        self.cb_cmd.addItem("plt.gca();dpi=float(self.le_dpi.text());w=self.main.width();h=self.main.height();w1,h1=[x*self.fig.dpi for x in self.fig.get_size_inches()];w2=float(self.le_width.text())*dpi;h2=float(self.le_height.text())*dpi;self.main.resize(w+w2-w1,h+h2-h1);self.le_ans.setText('%s'%self.fig.get_size_inches())#Resize canvas")
 
         hbox_av.addWidget(self.cb_cmd)        
 
@@ -195,23 +208,34 @@ class ExportWidget(QtGui.QWidget):
         # self.le_ans.setEnabled(False)
         self.le_ans.setMaximumWidth(60)
         hbox_av.addWidget(self.le_ans)
-        
         vbox = QtGui.QVBoxLayout(self)
         vbox.addWidget(self.toolbar)
         vbox.addWidget(self.canvas)
-        vbox.addLayout(hbox)
-        vbox.addLayout(grid_general)
-        vbox.addLayout(grid)
-        vbox.addLayout(grid2)
-        vbox.addLayout(hbox_av)
+        
+        vbox2 = QtGui.QVBoxLayout()       
+        vbox2.addLayout(hbox)
+        vbox2.addLayout(grid_general)
+        vbox2.addLayout(grid)
+        vbox2.addLayout(grid2)
+        vbox2.addLayout(hbox2)
+        vbox2.addLayout(hbox_av)
+        s_widget = QtGui.QWidget() 
+        s_widget.setLayout(vbox2)
+        s_area = QtGui.QScrollArea()
+        s_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        s_area.setFixedHeight(s_widget.sizeHint().height())
+        s_area.setFrameStyle(QtGui.QScrollArea.NoFrame)
+        s_area.setWidgetResizable(True)
+        s_area.setWidget(s_widget)
+        vbox.addWidget(s_area)
+
 
     def populate_ui(self):
         profile = self.main.profile_settings
-        
-        if '<keep>' not in str(self.le_title.text()):
-            self.le_title.setText(profile['title'])
+        self.le_title.setText(profile['title'])
         self.le_dpi.setText(profile['DPI'])
         self.cb_rasterize.setChecked(bool(profile['rasterize']))
+        self.cb_hold.setChecked(bool(profile['hold']))
         
         self.le_x_label.setText(profile['x_label'])
         self.le_y_label.setText(profile['y_label'])
@@ -227,11 +251,13 @@ class ExportWidget(QtGui.QWidget):
 
         self.le_font.setText(profile['font'])
         self.le_width.setText(profile['width'])
-        # cb orient
+        index = self.cb_cb_orient.findText(profile['cb_orient'])
+        if index != -1:
+            self.cb_cb_orient.setCurrentIndex(index)
 
         self.le_font_size.setText(profile['font_size'])
         self.le_height.setText(profile['height'])
-        # cb pos
+        self.le_cb_pos.setText(profile['cb_pos'])
 
         self.cb_triangulation.setChecked(bool(profile['triangulation']))
         self.cb_tripcolor.setChecked(bool(profile['tripcolor']))
@@ -252,12 +278,13 @@ class ExportWidget(QtGui.QWidget):
             '<x>': self.main.x_name,
             '<y>': self.main.y_name,
             '<z>': self.main.data_name,
-            '<keep>':'',
             '<return>':'\n',
             '<gamma>':'(%s %s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text()),
             '<winSize>':'(%s %s)'%(self.main.width(),self.main.height())
         }
         for old, new in conversions.items():
+            s = s.replace(old, new)
+        for old, new in self.userDict.items():
             s = s.replace(old, new)
         for key, item in self.main.dat_file.qtlab_settings.items():
             if isinstance(item, dict):
@@ -272,13 +299,15 @@ class ExportWidget(QtGui.QWidget):
                 'family': str(self.le_font.text()),
                 'size': int(str(self.le_font_size.text()))
             }
-
             mpl.rc('font', **font)
 
             # Clear the plot
             if self.cb_hold.checkState() == QtCore.Qt.Unchecked:
                 self.filenames = []
                 self.ax.clear()
+                new_dpi = float(self.le_dpi.text())
+                if self.fig.dpi != new_dpi:
+                    self.fig.set_dpi(new_dpi)
             self.filenames.append(os.path.splitext(self.format_label('<filename>'))[0])
             # Get the data and colormap
             x, y, z = self.main.data.get_pcolor()
@@ -359,11 +388,15 @@ class ExportWidget(QtGui.QWidget):
             self.fig.tight_layout()
 
             self.canvas.draw()
+            self.le_dpi.setText('%s'%self.fig.dpi)
+            w,h = self.fig.get_size_inches()
+            self.le_width.setText('%s'%w)
+            self.le_height.setText('%s'%h)
 
     def on_copy(self):
         """ Copy the current plot to the clipboard """
         buf = io.BytesIO()
-        self.fig.savefig(buf,dpi=int(self.le_dpi.text()))
+        self.fig.savefig(buf,dpi=float(self.le_dpi.text()))
         img = QtGui.QImage.fromData(buf.getvalue())
         QtGui.QApplication.clipboard().setImage(img)
         buf.close()
@@ -373,22 +406,35 @@ class ExportWidget(QtGui.QWidget):
         try:
             import win32com.client
             app = win32com.client.GetActiveObject('PowerPoint.Application')
-            app.WindowState=2 #minimize the window so it will come back to the front later
-        except ImportError:
+        except:
             print('ERROR: win32com library missing or no ppt file opened')
             return
 
         # First, copy to the clipboard
         self.on_copy()
-
+        aw = app.ActiveWindow
+        aw.WindowState=2 #minimize the window so it will come back to the front later            
+ 
         # Get the current slide and paste the plot
-        slide = app.ActiveWindow.View.Slide
+        slide = aw.View.Slide
         shape = slide.Shapes.Paste()
-
+        aw.WindowState=1 #normal the window size. Now it comes back to the front
+        
         # Add a hyperlink to the data location to easily open the data again
-        if self.main.abs_filename:
-            shape.ActionSettings[0].Hyperlink.Address = self.main.abs_filename
-        app.WindowState=1 #normal the window size. Now it comes back to the front
+        pptpath = aw.Presentation.FullName
+        if self.main.abs_filename and os.path.isfile(pptpath):#if the ppt file has never been saved, nothing will be done
+            # change the folder temply
+            old1 = self.main.operations_dir
+            old2 = self.main.profiles_dir
+            self.main.operations_dir = os.path.splitext(pptpath)[0]#want a folder with the same name as .ppt file
+            self.main.profiles_dir = self.main.operations_dir
+            if not os.path.isdir(self.main.operations_dir):
+                os.mkdir(self.main.operations_dir)
+            self.main.save_state(self.main.name+'.ini')
+            # restore them back
+            self.main.operations_dir = old1
+            self.main.profiles_dir = old2
+            # shape.ActionSettings[0].Hyperlink.Address = pp
 
     def on_to_word(self):
         """ Some win32 COM magic to interact with word """
@@ -432,7 +478,7 @@ class ExportWidget(QtGui.QWidget):
             self.fig.set_size_inches(float(self.le_width.text()),
                                      float(self.le_height.text()))
 
-            dpi = int(self.le_dpi.text())
+            dpi = float(self.le_dpi.text())
 
             self.fig.savefig(filename, dpi=dpi, bbox_inches='tight')
             self.fig.set_size_inches(previous_size)
@@ -442,7 +488,7 @@ class ExportWidget(QtGui.QWidget):
         cmdstr = str(self.cb_cmd.currentText())
         if cmdstr.startswith("plt.") or cmdstr.startswith('self'):
             try:
-                exec(cmdstr)
                 self.le_ans.setText('')
+                exec(cmdstr)
             except:
                 self.le_ans.setText('Error!')
