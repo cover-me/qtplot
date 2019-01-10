@@ -13,6 +13,7 @@ This is a project forked from Rubenknex/qtplot. The original one is already a ve
 
 
 ## Installation
+After installing, please delete old profiles by click Settings->Remove and restart the program again if you have versions older than 2018.12.03 in use.
 
 ### Install qtplot with Anaconda Python
 Qtplot is compatible with both Python 2 and 3. Using the Anaconda Python distribution (https://www.continuum.io/downloads) is recommended to make installing packages like `numpy` and `scipy` easier.
