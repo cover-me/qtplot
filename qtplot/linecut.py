@@ -357,7 +357,7 @@ class Linecut(QtGui.QDialog):
         self.title = title
         self.x, self.y, self.z = x, y, z
         self.ax.xaxis.set_major_formatter(FixedOrderFormatter(str(self.main.export_widget.le_x_format.text()), float(self.main.export_widget.le_x_div.text())))
-        self.ax.yaxis.set_major_formatter(FixedOrderFormatter(str(self.main.export_widget.le_y_format.text()), float(self.main.export_widget.le_y_div.text())))
+        self.ax.yaxis.set_major_formatter(FixedOrderFormatter(str(self.main.export_widget.le_z_format.text()), float(self.main.export_widget.le_z_div.text())))
         
         if self.cb_include_z.checkState() == QtCore.Qt.Checked:
             title = '{0} {1}={2}'.format(title, otherlabel, z) if (otherlabel or float(z)!=0) else title
