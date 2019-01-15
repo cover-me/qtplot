@@ -58,10 +58,6 @@ class Linecut(QtGui.QDialog):
         self.marker = None
         self.colors = LineColors('rbgcmyk')
         self.singleLine = True
-
-        self.ax.xaxis.set_major_formatter(FixedOrderFormatter())
-        self.ax.yaxis.set_major_formatter(FixedOrderFormatter())
-
         self.init_ui()
 
     def init_ui(self):
@@ -360,17 +356,19 @@ class Linecut(QtGui.QDialog):
         self.xlabel, self.ylabel, self.otherlabel = xlabel, ylabel, otherlabel
         self.title = title
         self.x, self.y, self.z = x, y, z
-
+        self.ax.xaxis.set_major_formatter(FixedOrderFormatter(str(self.main.export_widget.le_x_format.text()), float(self.main.export_widget.le_x_div.text())))
+        self.ax.yaxis.set_major_formatter(FixedOrderFormatter(str(self.main.export_widget.le_y_format.text()), float(self.main.export_widget.le_y_div.text())))
+        
         if self.cb_include_z.checkState() == QtCore.Qt.Checked:
-            title = '{0} {1}={2}'.format(title, otherlabel, z) if (otherlabel or z!='0') else title
+            title = '{0} {1}={2}'.format(title, otherlabel, z) if (otherlabel or float(z)!=0) else title
 
         title = '\n'.join(textwrap.wrap(title, 60, replace_whitespace=False))
         self.ax.set_title(title,fontsize=int(str(self.main.export_widget.le_font_size.text())))
-
+        
         self.ax.set_xlabel(xlabel)
         self.ax.set_ylabel(ylabel)
-        traceLabel = self.main.name.replace('.dat',' ')
-        traceLabel += z if (otherlabel or z!='0') else ''
+        traceLabel = self.main.name.replace('.dat','')
+        traceLabel += ' %s'%z if (otherlabel or float(z)!=0) else ''
 
         # Remove all the existing lines and only plot one if we uncheck
         # the incremental box. Else, add a new line to the collection
