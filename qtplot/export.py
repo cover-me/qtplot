@@ -67,6 +67,7 @@ class ExportWidget(QtGui.QWidget):
 
         grid_general.addWidget(QtGui.QLabel('Title'), 1, 1)
         self.le_title = QtGui.QLineEdit('test')
+        self.le_title.setToolTip('<filename>, <operations>, something like <ivvi:dac1>, ...')
         grid_general.addWidget(self.le_title, 1, 2)
 
         grid_general.addWidget(QtGui.QLabel('DPI'), 1, 3)
@@ -91,7 +92,8 @@ class ExportWidget(QtGui.QWidget):
         grid.addWidget(self.le_x_label, 2, 2)
 
         grid.addWidget(QtGui.QLabel('X Format'), 2, 3)
-        self.le_x_format = QtGui.QLineEdit('%.0f')
+        self.le_x_format = QtGui.QLineEdit('%f')
+        self.le_x_format.setToolTip('%[.n]f: engineering notation\n%[.n]e: scientific notation\n%[.n]F: float\n...')
         self.le_x_format.setMaximumWidth(50)
         grid.addWidget(self.le_x_format, 2, 4)
 
@@ -106,7 +108,7 @@ class ExportWidget(QtGui.QWidget):
         grid.addWidget(self.le_y_label, 3, 2)
 
         grid.addWidget(QtGui.QLabel('Y Format'), 3, 3)
-        self.le_y_format = QtGui.QLineEdit('%.0f')
+        self.le_y_format = QtGui.QLineEdit('%f')
         self.le_y_format.setMaximumWidth(50)
         grid.addWidget(self.le_y_format, 3, 4)
 
@@ -121,7 +123,7 @@ class ExportWidget(QtGui.QWidget):
         grid.addWidget(self.le_z_label, 4, 2)
 
         grid.addWidget(QtGui.QLabel('Z Format'), 4, 3)
-        self.le_z_format = QtGui.QLineEdit('%.0f')
+        self.le_z_format = QtGui.QLineEdit('%f')
         self.le_z_format.setMaximumWidth(50)
         grid.addWidget(self.le_z_format, 4, 4)
 
