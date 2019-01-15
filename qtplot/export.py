@@ -51,6 +51,7 @@ class ExportWidget(QtGui.QWidget):
         hbox.addWidget(self.b_to_word)
         
         self.b_to_ppt = QtGui.QPushButton('PPT+', self)
+        self.b_to_ppt.setToolTip('The figure will be sent to a ppt and the profile will be saved to the ppt folder for replotting.')
         self.b_to_ppt.clicked.connect(self.on_to_ppt)
         hbox.addWidget(self.b_to_ppt)
 
