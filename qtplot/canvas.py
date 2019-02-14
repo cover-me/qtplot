@@ -242,9 +242,9 @@ class Canvas(scene.SceneCanvas):
                 # vertical linecut
                 if event.button == 1:
                     self.draw_horizontal_linecut(y)
-                elif event.button == 2:
-                    self.draw_arbitrary_linecut(x, y, initial_press)
                 elif event.button == 3:
+                    self.draw_arbitrary_linecut(x, y, initial_press)
+                elif event.button == 2:
                     self.draw_vertical_linecut(x)
 
                 self.has_redrawn = False
