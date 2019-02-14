@@ -295,10 +295,10 @@ class Data2D:
         _, ext = os.path.splitext(filename)
 
         if ext == '.npy':
-            mat = np.dstack((self.x.data, self.y.data, self.z.data))
+            mat = np.dstack((self.x, self.y, self.z))
             np.save(filename, mat)
         elif ext == '.mat':
-            mat = np.dstack((self.x.data, self.y.data, self.z.data))
+            mat = np.dstack((self.x, self.y, self.z))
             io.savemat(filename, {'data': mat})
         elif ext == '.dat':
             with open(filename, 'w') as f:
