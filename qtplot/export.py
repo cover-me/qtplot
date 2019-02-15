@@ -73,6 +73,7 @@ class ExportWidget(QtGui.QWidget):
 
         grid_general.addWidget(QtGui.QLabel('DPI'), 1, 3)
         self.le_dpi = QtGui.QLineEdit('80')
+        self.le_dpi.setToolTip('This is the dpi for screen/copy/ppt/word purpose. The dpi of exported files is always 300')
         self.le_dpi.setMaximumWidth(50)
         grid_general.addWidget(self.le_dpi, 1, 4)
 
@@ -334,13 +335,13 @@ class ExportWidget(QtGui.QWidget):
             if self.cb_tripcolor.checkState() != QtCore.Qt.Checked:
                 quadmesh = self.ax.pcolormesh(x, y, z,
                                               cmap=cmap,
-                                              rasterized=True)
+                                              rasterized=self.cb_rasterize.isChecked())
 
                 quadmesh.set_clim(self.main.canvas.colormap.get_limits())
             else:
                 quadmesh = self.ax.tripcolor(tri,
                                              self.main.data.z.ravel(),
-                                             cmap=cmap, rasterized=True)
+                                             cmap=cmap, rasterized=self.cb_rasterize.isChecked())
 
                 quadmesh.set_clim(self.main.canvas.colormap.get_limits())
 
@@ -371,7 +372,6 @@ class ExportWidget(QtGui.QWidget):
             # Colorbar layout
             orientation = str(self.cb_cb_orient.currentText())
             self.cb = self.fig.colorbar(quadmesh, orientation=orientation)
-
             self.cb.formatter = FixedOrderFormatter(
                 str(self.le_z_format.text()), float(self.le_z_div.text()))
 
@@ -379,7 +379,10 @@ class ExportWidget(QtGui.QWidget):
 
             self.cb.set_label(self.format_label(self.le_z_label.text()))
             self.cb.draw_all()
-
+            if self.cb_rasterize.isChecked():
+                self.cb.solids.set_rasterized(True)
+            else:
+                self.cb.solids.set_rasterized(False)
             # Plot the current linecut if neccesary
             if self.cb_linecut.checkState() == QtCore.Qt.Checked:
                 for linetrace in self.main.linecut.linetraces:
@@ -481,7 +484,7 @@ class ExportWidget(QtGui.QWidget):
             self.fig.set_size_inches(float(self.le_width.text()),
                                      float(self.le_height.text()))
 
-            dpi = float(self.le_dpi.text())
+            dpi = 300
 
             self.fig.savefig(filename, dpi=dpi, bbox_inches='tight')
             self.fig.set_size_inches(previous_size)
