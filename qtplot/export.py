@@ -78,7 +78,7 @@ class ExportWidget(QtGui.QWidget):
 
         grid_general.addWidget(QtGui.QLabel('DPI'), 1, 3)
         self.le_dpi = QtGui.QLineEdit('80')
-        self.le_dpi.setToolTip('This is the dpi for screen/copy/ppt/word purpose. The dpi of exported files is always 300')
+        self.le_dpi.setToolTip('DPI for screen(80),copy/ppt/word(80),exporting(300). If any missing, default values will apply')
         self.le_dpi.setMaximumWidth(50)
         grid_general.addWidget(self.le_dpi, 1, 4)
 
@@ -204,7 +204,7 @@ class ExportWidget(QtGui.QWidget):
         self.cb_cmd.addItem("plt.text(1,0,'(%s %s %s) (%s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text(),self.main.width(),self.main.height()),verticalalignment='bottom',horizontalalignment='right',transform=self.fig.transFigure,fontsize=10);self.canvas.draw()#Add gamma info to plot")
         self.cb_cmd.addItem("self.populate_ui()#restore to last profile")
         self.cb_cmd.addItem("self.userDict={}")
-        self.cb_cmd.addItem("plt.gca();dpi=float(self.le_dpi.text());w=self.main.width();h=self.main.height();w1,h1=[x*self.fig.dpi for x in self.fig.get_size_inches()];w2=float(self.le_width.text())*dpi;h2=float(self.le_height.text())*dpi;self.main.resize(w+w2-w1,h+h2-h1);self.le_ans.setText('%s'%self.fig.get_size_inches())#Resize canvas")
+        self.cb_cmd.addItem("plt.gca();dpi=self.get_dpi(0);w=self.main.width();h=self.main.height();w1,h1=[x*self.fig.dpi for x in self.fig.get_size_inches()];w2=float(self.le_width.text())*dpi;h2=float(self.le_height.text())*dpi;self.main.resize(w+w2-w1,h+h2-h1);self.le_ans.setText('%s'%self.fig.get_size_inches())#Resize canvas")
 
         hbox_av.addWidget(self.cb_cmd)        
 
@@ -300,7 +300,14 @@ class ExportWidget(QtGui.QWidget):
                 for key_, item_ in item.items():
                     s = s.replace('<%s:%s>'%(key,key_), '%s'%item_)
         return s
-
+    def get_dpi(self,index):
+        '''Return dpi setting value, index=0,1,2 for screen,copy/ppt/word,export'''
+        dpi_list = self.le_dpi.text().split(',')
+        if index<len(dpi_list):
+            return float(dpi_list[index])
+        else:
+            return 80 if index<2 else 300
+        
     def on_update(self):
         """ Draw the entire plot """
         if self.main.data is not None:
@@ -309,7 +316,7 @@ class ExportWidget(QtGui.QWidget):
             if self.cb_hold.checkState() == QtCore.Qt.Unchecked:
                 self.filenames = []
                 self.ax.clear()
-                new_dpi = float(self.le_dpi.text())
+                new_dpi = self.get_dpi(0)
                 if self.fig.dpi != new_dpi:
                     self.fig.set_dpi(new_dpi)
             self.filenames.append(os.path.splitext(self.format_label('<filename>'))[0])
@@ -392,9 +399,7 @@ class ExportWidget(QtGui.QWidget):
                         plt.axvline(linetrace.position, color='red')
 
             self.fig.tight_layout()
-
             self.canvas.draw()
-            self.le_dpi.setText('%s'%self.fig.dpi)
             w,h = self.fig.get_size_inches()
             self.le_width.setText('%s'%w)
             self.le_height.setText('%s'%h)
@@ -402,7 +407,7 @@ class ExportWidget(QtGui.QWidget):
     def on_copy(self):
         """ Copy the current plot to the clipboard """
         buf = io.BytesIO()
-        self.fig.savefig(buf,dpi=float(self.le_dpi.text()))
+        self.fig.savefig(buf,dpi=self.get_dpi(1))
         img = QtGui.QImage.fromData(buf.getvalue())
         QtGui.QApplication.clipboard().setImage(img)
         buf.close()
@@ -467,11 +472,12 @@ class ExportWidget(QtGui.QWidget):
         """ Export the current plot to a file """
         path = os.path.dirname(os.path.realpath(__file__))
 
-        filters = ('Portable Network Graphics (*.png);;'
+        filters = ('Scalable Vector Graphics (*.svg);;'
                    'Portable Document Format (*.pdf);;'
-                   'Postscript (*.ps);;'
                    'Encapsulated Postscript (*.eps);;'
-                   'Scalable Vector Graphics (*.svg)')
+                   'Postscript (*.ps);;'
+                   'Portable Network Graphics (*.png)'
+                   )
 
         filename = QtGui.QFileDialog.getSaveFileName(self,
                                                      caption='Export figure',
@@ -484,9 +490,7 @@ class ExportWidget(QtGui.QWidget):
             self.fig.set_size_inches(float(self.le_width.text()),
                                      float(self.le_height.text()))
 
-            dpi = 300
-
-            self.fig.savefig(filename, dpi=dpi, bbox_inches='tight')
+            self.fig.savefig(filename, dpi=self.get_dpi(2), bbox_inches='tight')
             self.fig.set_size_inches(previous_size)
 
             self.canvas.draw()
