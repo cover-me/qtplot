@@ -409,7 +409,7 @@ class QTPlot(QtGui.QMainWindow):
         self.resize(500, 800)
         self.move(200, 100)
         self.show()
-        self.linecut.resize(500, 400)
+        self.linecut.resize(520, 400)
         self.linecut.move(self.width()+220, 100)
         self.operations.resize(400, 200)
         self.operations.move(self.width()+220, 540)
@@ -835,6 +835,14 @@ class QTPlot(QtGui.QMainWindow):
         else:
             self.le_path.setText(filepath)
             self.load_dat_file(filepath)
+            
+    def moveEvent(self, event):
+        super(QTPlot, self).moveEvent(event)
+        diff = event.pos() - event.oldPos()
+        for i in [self.linecut,self.operations,self.settings]:
+            geo = i.geometry()
+            geo.moveTopLeft(geo.topLeft() + diff)
+            i.setGeometry(geo)
 
     def closeEvent(self, event):
         self.linecut.close()
