@@ -320,6 +320,8 @@ class ExportWidget(QtGui.QWidget):
                 new_dpi = self.get_dpi(0)
                 if self.fig.dpi != new_dpi:
                     self.fig.set_dpi(new_dpi)
+                    self.main.resize(self.main.width(),self.main.height()+1)
+                    self.main.resize(self.main.width(),self.main.height()-1)#update the window to refresh the size of canvas
             self.filenames.append(os.path.splitext(self.format_label('<filename>'))[0])
             # Get the data and colormap
             x, y, z = self.main.data.get_pcolor()
