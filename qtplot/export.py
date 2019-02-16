@@ -78,7 +78,7 @@ class ExportWidget(QtGui.QWidget):
 
         grid_general.addWidget(QtGui.QLabel('DPI'), 1, 3)
         self.le_dpi = QtGui.QLineEdit('80')
-        self.le_dpi.setToolTip('DPI for screen(80),copy/ppt/word(80),exporting(300). If any missing, default values will apply')
+        self.le_dpi.setToolTip('DPI for screen,copy/ppt/word,exporting.')
         self.le_dpi.setMaximumWidth(50)
         grid_general.addWidget(self.le_dpi, 1, 4)
 
@@ -302,7 +302,8 @@ class ExportWidget(QtGui.QWidget):
         return s
     def get_dpi(self,index):
         '''Return dpi setting value, index=0,1,2 for screen,copy/ppt/word,export'''
-        dpi_list = self.le_dpi.text().split(',')
+        dpi_str = self.le_dpi.text()
+        dpi_list = self.le_dpi.text().split(',') if dpi_str else []
         if index<len(dpi_list):
             return float(dpi_list[index])
         else:
@@ -400,6 +401,7 @@ class ExportWidget(QtGui.QWidget):
 
             self.fig.tight_layout()
             self.canvas.draw()
+            self.le_dpi.setText('%g,%g,%g'%(self.fig.dpi,self.get_dpi(1),self.get_dpi(2)))
             w,h = self.fig.get_size_inches()
             self.le_width.setText('%s'%w)
             self.le_height.setText('%s'%h)
