@@ -12,26 +12,31 @@ import io
 class ExportWidget(QtGui.QWidget):
     def __init__(self, main):
         QtGui.QWidget.__init__(self)
-
-        # Set some matplotlib font settings
-        _fontmap = { 'rm'  : 'DejaVu Sans',
-                    'it'  : 'DejaVu Sans:italic',
-                    'bf'  : 'DejaVu Sans:weight=bold',
-                    'sf'  : 'DejaVu Sans',
-                    'tt'  : 'DejaVu Sans Mono',
-                    'cal' : 'DejaVu Sans',}#took from matplotlib 3, seems useless
-        mpl.rcParams['mathtext.fontset'] = 'custom'
-        mpl.rc('mathtext',**_fontmap)
-
         self.main = main
-
         self.fig, self.ax = plt.subplots()
         self.filenames = []
         self.cb = None
         self.userDict={}
-
         self.init_ui()
-
+        self.init_mpl()
+    
+    def init_mpl(self):
+        # Set some matplotlib font settings
+        _fontmap = { 'rm'  : str(self.le_font.text()),
+                    'it'  : str(self.le_font.text()),
+                    'bf'  : str(self.le_font.text()),
+                    'sf'  : str(self.le_font.text()),
+                    'tt'  : str(self.le_font.text()),
+                    'cal' : str(self.le_font.text()),}
+        mpl.rcParams['mathtext.fontset'] = 'custom'
+        mpl.rc('mathtext',**_fontmap)
+        font = {
+                'family': str(self.le_font.text()),
+                'size': int(str(self.le_font_size.text()))
+            }
+        mpl.rc('font', **font)
+        mpl.rcParams['svg.fonttype'] = 'none'
+        
     def init_ui(self):
         self.canvas = FigureCanvasQTAgg(self.fig)
         self.toolbar = NavigationToolbar2QT(self.canvas, self)
@@ -299,12 +304,7 @@ class ExportWidget(QtGui.QWidget):
     def on_update(self):
         """ Draw the entire plot """
         if self.main.data is not None:
-            font = {
-                'family': str(self.le_font.text()),
-                'size': int(str(self.le_font_size.text()))
-            }
-            mpl.rc('font', **font)
-
+            self.init_mpl()
             # Clear the plot
             if self.cb_hold.checkState() == QtCore.Qt.Unchecked:
                 self.filenames = []
@@ -356,9 +356,9 @@ class ExportWidget(QtGui.QWidget):
             title += '' if len(self.filenames)<2 else  (' & ' + ' '.join(self.filenames[:-1]))
             title = '\n'.join(textwrap.wrap(title, max(int(30*(self.main.width()/300.)),40), replace_whitespace=False))
             # Set all the plot labels
-            self.ax.set_title(title,fontsize=int(str(self.le_font_size.text())))
-            self.ax.set_xlabel(self.format_label(self.le_x_label.text()))
-            self.ax.set_ylabel(self.format_label(self.le_y_label.text()))
+            self.ax.set_title(title,fontsize=int(str(self.le_font_size.text())),fontname=str(self.le_font.text()))
+            self.ax.set_xlabel(self.format_label(self.le_x_label.text()),fontname=str(self.le_font.text()))
+            self.ax.set_ylabel(self.format_label(self.le_y_label.text()),fontname=str(self.le_font.text()))
 
             # Set the axis tick formatters
             self.ax.xaxis.set_major_formatter(FixedOrderFormatter(
