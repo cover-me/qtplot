@@ -242,9 +242,9 @@ class Canvas(scene.SceneCanvas):
                 # vertical linecut
                 if event.button == 1:
                     self.draw_horizontal_linecut(y)
-                elif event.button == 3:
-                    self.draw_arbitrary_linecut(x, y, initial_press)
                 elif event.button == 2:
+                    self.draw_arbitrary_linecut(x, y, initial_press)
+                elif event.button == 3:
                     self.draw_vertical_linecut(x)
 
                 self.has_redrawn = False
@@ -260,10 +260,6 @@ class Canvas(scene.SceneCanvas):
 
                 self.has_redrawn = False
 
-            # Set the line endpoints in the shader program
-            self.linecut_program['a_position'] = [self.mouse_start,
-                                                  self.mouse_end]
-
         self.update()
 
     def draw_horizontal_linecut(self, y):
@@ -271,7 +267,6 @@ class Canvas(scene.SceneCanvas):
         self.line_coord = self.data.get_closest_y(y)
         self.mouse_start = (self.xmin, self.line_coord)
         self.mouse_end = (self.xmax, self.line_coord)
-
         # Get the data row
         x, y, row_numbers, index = self.data.get_row_at(y)
         z = '%.3e'%np.nanmean(self.data.y[index, :])
@@ -284,7 +279,9 @@ class Canvas(scene.SceneCanvas):
                                            title,
                                            x_name, data_name,
                                            y_name)
-
+        # Set the line endpoints in the shader program
+        self.linecut_program['a_position'] = [self.mouse_start, self.mouse_end]
+        
     def draw_vertical_linecut(self, x):
         self.line_type = 'vertical'
         self.line_coord = self.data.get_closest_x(x)
@@ -303,12 +300,15 @@ class Canvas(scene.SceneCanvas):
                                            title,
                                            y_name, data_name,
                                            x_name)
-
+        # Set the line endpoints in the shader program
+        self.linecut_program['a_position'] = [self.mouse_start, self.mouse_end]
+        
     def draw_arbitrary_linecut(self, x, y, initial_press):
         self.line_type = 'diagonal'
 
         if initial_press:
             # Store the initial location as start and end
+            self.draw_vertical_linecut(x)
             self.mouse_start = (x, y)
             self.mouse_end = (x, y)
         else:
@@ -345,6 +345,8 @@ class Canvas(scene.SceneCanvas):
             if dx!=0 and dy!=0:
                 text = '({:+.3e}, {:+.3e})'.format(dy / dx, dx / dy)
                 self.parent.l_slope.setText(text)
+            # Set the line endpoints in the shader program
+            self.linecut_program['a_position'] = [self.mouse_start, self.mouse_end]
 
     def on_mouse_press(self, event):
         self.draw_linecut(event, initial_press=True)
