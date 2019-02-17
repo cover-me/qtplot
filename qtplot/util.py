@@ -31,7 +31,7 @@ class FixedOrderFormatter(ScalarFormatter):
         %.F: float number
         %.e: scientific notation
     """
-    def __init__(self, format='%.0f', division=1e0):
+    def __init__(self, format='%f', division=1e0):
         ScalarFormatter.__init__(self, useOffset=False, useMathText=True)
         self.format = format
         self.division = division

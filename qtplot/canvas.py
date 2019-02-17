@@ -271,9 +271,7 @@ class Canvas(scene.SceneCanvas):
         x, y, row_numbers, index = self.data.get_row_at(y)
         z = '%.3e'%np.nanmean(self.data.y[index, :])
 
-        x_name, y_name, data_name = self.parent.get_axis_names()
-        _ = self.parent.export_widget
-        title = _.format_label(str(_.le_title.text()))
+        x_name, y_name, data_name, title = self.parent.export_widget.get_format_axis_names()
         self.parent.linecut.plot_linetrace(x, y, z, row_numbers, self.line_type,
                                            self.line_coord,
                                            title,
@@ -292,9 +290,7 @@ class Canvas(scene.SceneCanvas):
         x, y, row_numbers, index = self.data.get_column_at(x)
         z = '%.3e'%np.nanmean(self.data.x[:, index])
 
-        x_name, y_name, data_name = self.parent.get_axis_names()
-        _ = self.parent.export_widget
-        title = _.format_label(str(_.le_title.text()))
+        x_name, y_name, data_name, title = self.parent.export_widget.get_format_axis_names()
         self.parent.linecut.plot_linetrace(x, y, z, row_numbers, self.line_type,
                                            self.line_coord,
                                            title,
@@ -329,9 +325,7 @@ class Canvas(scene.SceneCanvas):
             # Create data for the x-axis using hypotenuse
             dist = np.hypot(x_points - x_points[0], y_points - y_points[0])
 
-            x_name, y_name, data_name = self.parent.get_axis_names()
-            _ = self.parent.export_widget
-            title = _.format_label(str(_.le_title.text()))
+            x_name, y_name, data_name, title = self.parent.export_widget.get_format_axis_names()
             self.parent.linecut.plot_linetrace(dist, vals, z, None,
                                                self.line_type,
                                                self.line_coord,

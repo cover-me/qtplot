@@ -22,17 +22,18 @@ class ExportWidget(QtGui.QWidget):
     
     def init_mpl(self):
         # Set some matplotlib font settings
-        _fontmap = { 'rm'  : str(self.le_font.text()),
-                    'it'  : str(self.le_font.text()),
-                    'bf'  : str(self.le_font.text()),
-                    'sf'  : str(self.le_font.text()),
-                    'tt'  : str(self.le_font.text()),
-                    'cal' : str(self.le_font.text()),}
+        fnt = str(self.le_font.text())
+        _fontmap = { 'rm'  : fnt,
+                    'it'  : fnt,
+                    'bf'  : fnt,
+                    'sf'  : fnt,
+                    'tt'  : fnt,
+                    'cal' : fnt,}
         mpl.rcParams['mathtext.fontset'] = 'custom'
         mpl.rc('mathtext',**_fontmap)
         ftsz = int(str(self.le_font_size.text()))
         font = {
-                'family': str(self.le_font.text()),
+                'family': fnt,
                 'size': ftsz
             }
         mpl.rc('font', **font)
@@ -302,6 +303,13 @@ class ExportWidget(QtGui.QWidget):
                 for key_, item_ in item.items():
                     s = s.replace('<%s:%s>'%(key,key_), '%s'%item_)
         return s
+    
+    def get_format_axis_names(self):
+        xname = self.format_label(str(self.le_x_label.text()))
+        yname = self.format_label(str(self.le_y_label.text()))
+        zname = self.format_label(str(self.le_z_label.text()))
+        title = self.format_label(str(self.le_title.text()))
+        return (xname,yname,zname,title)
     def get_dpi(self,index):
         '''Return dpi setting value, index=0,1,2 for screen,copy/ppt/word,export'''
         dpi_str = self.le_dpi.text()

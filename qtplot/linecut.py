@@ -19,7 +19,7 @@ class Linetrace(plt.Line2D):
     to be able to store incremental linetraces in an array.
 
     x/y:        Arrays containing x and y data
-    type:       Type of linetrace, 'horizontal' or 'vertical'
+    type:       Type of linetrace, horizontal / vertical / diagonal
     traceLabel:   label containing infomation of the file name and the x/y coordinate at which the linetrace was taken
     """
 
@@ -356,7 +356,12 @@ class Linecut(QtGui.QDialog):
         self.xlabel, self.ylabel, self.otherlabel = xlabel, ylabel, otherlabel
         self.title = title
         self.x, self.y, self.z = x, y, z
-        self.ax.xaxis.set_major_formatter(FixedOrderFormatter(str(self.main.export_widget.le_x_format.text()), float(self.main.export_widget.le_x_div.text())))
+        if type=='horizontal':
+            self.ax.xaxis.set_major_formatter(FixedOrderFormatter(str(self.main.export_widget.le_x_format.text()), float(self.main.export_widget.le_x_div.text())))
+        elif type=='vertical':
+            self.ax.xaxis.set_major_formatter(FixedOrderFormatter(str(self.main.export_widget.le_y_format.text()), float(self.main.export_widget.le_y_div.text())))
+        else:
+            self.ax.xaxis.set_major_formatter(FixedOrderFormatter())
         self.ax.yaxis.set_major_formatter(FixedOrderFormatter(str(self.main.export_widget.le_z_format.text()), float(self.main.export_widget.le_z_div.text())))
         
         if self.cb_include_z.checkState() == QtCore.Qt.Checked:
