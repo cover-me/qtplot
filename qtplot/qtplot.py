@@ -481,7 +481,7 @@ class QTPlot(QtGui.QMainWindow):
 
     def load_dat_file(self, filename):
         """
-        Load a .dat or .npy file, it's .set file if present, update the GUI elements,
+        Load a .dat/.npy/.mtx file, it's .set file if present, update the GUI elements,
         and fire an on_data_change event to update the plots.
         """
         t0 = time()
@@ -673,7 +673,7 @@ class QTPlot(QtGui.QMainWindow):
 
     def on_refresh(self):
         new_filepath = str(self.le_path.text()).strip()
-        if os.path.isfile(new_filepath) and (new_filepath.endswith('.dat') or new_filepath.endswith('.npy')):
+        if os.path.isfile(new_filepath) and any([new_filepath.endswith(x) for x in ['.dat','.npy','.mtx']]):
             self.filename = new_filepath
             self.load_dat_file(self.filename)
         else:
@@ -818,8 +818,7 @@ class QTPlot(QtGui.QMainWindow):
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             url = str(event.mimeData().urls()[0].toString())
-
-            if url.endswith('.dat') or url.endswith('.npy') or (url.endswith('.ini') and self.name==os.path.basename(url)[:-4]):
+            if any([url.endswith(x) for x in ['.dat','.npy','.mtx']]) or (url.endswith('.ini') and self.name==os.path.basename(url)[:-4]):
                 event.accept()
 
     def dropEvent(self, event):
