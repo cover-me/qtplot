@@ -30,11 +30,13 @@ class ExportWidget(QtGui.QWidget):
                     'cal' : str(self.le_font.text()),}
         mpl.rcParams['mathtext.fontset'] = 'custom'
         mpl.rc('mathtext',**_fontmap)
+        ftsz = int(str(self.le_font_size.text()))
         font = {
                 'family': str(self.le_font.text()),
-                'size': int(str(self.le_font_size.text()))
+                'size': ftsz
             }
         mpl.rc('font', **font)
+        mpl.rcParams['axes.titlesize'] = ftsz
         mpl.rcParams['svg.fonttype'] = 'none'
         
     def init_ui(self):
@@ -318,10 +320,14 @@ class ExportWidget(QtGui.QWidget):
                 self.filenames = []
                 self.ax.clear()
                 new_dpi = self.get_dpi(0)
+                #refresh dpi setting for screen
                 if self.fig.dpi != new_dpi:
                     self.fig.set_dpi(new_dpi)
                     self.main.resize(self.main.width(),self.main.height()+1)
-                    self.main.resize(self.main.width(),self.main.height()-1)#update the window to refresh the size of canvas
+                    self.main.resize(self.main.width(),self.main.height()-1)
+                    self.main.linecut.fig.set_dpi(new_dpi)
+                    self.main.linecut.resize(self.main.linecut.width(),self.main.linecut.height()+1)
+                    self.main.linecut.resize(self.main.linecut.width(),sself.main.linecut.height()-1)
             self.filenames.append(os.path.splitext(self.format_label('<filename>'))[0])
             # Get the data and colormap
             x, y, z = self.main.data.get_pcolor()
@@ -361,14 +367,17 @@ class ExportWidget(QtGui.QWidget):
                                 linewidth=0.5, markersize=3)
 
             self.ax.axis('tight')
-
-            title = self.format_label(str(self.le_title.text()))
-            title += '' if len(self.filenames)<2 else  (' & ' + ' '.join(self.filenames[:-1]))
-            title = '\n'.join(textwrap.wrap(title, max(int(30*(self.main.width()/300.)),40), replace_whitespace=False))
+            
             # Set all the plot labels
-            self.ax.set_title(title,fontsize=int(str(self.le_font_size.text())),fontname=str(self.le_font.text()))
-            self.ax.set_xlabel(self.format_label(self.le_x_label.text()),fontname=str(self.le_font.text()))
-            self.ax.set_ylabel(self.format_label(self.le_y_label.text()),fontname=str(self.le_font.text()))
+            ftsz = int(str(self.le_font_size.text()))
+            ftnm = str(self.le_font.text())
+            w,h = self.fig.get_size_inches()
+            title = self.format_label(str(self.le_title.text()))
+            title += '' if len(self.filenames)<2 or title=='' else  (' & ' + ' '.join(self.filenames[:-1]))
+            title = '\n'.join(textwrap.wrap(title,int(80.*w/ftsz), replace_whitespace=False))
+            self.ax.set_title(title,fontname=ftnm)
+            self.ax.set_xlabel(self.format_label(self.le_x_label.text()),fontname=ftnm)
+            self.ax.set_ylabel(self.format_label(self.le_y_label.text()),fontname=ftnm)
 
             # Set the axis tick formatters
             self.ax.xaxis.set_major_formatter(FixedOrderFormatter(
@@ -382,12 +391,13 @@ class ExportWidget(QtGui.QWidget):
             # Colorbar layout
             orientation = str(self.cb_cb_orient.currentText())
             self.cb = self.fig.colorbar(quadmesh, orientation=orientation)
-            self.cb.formatter = FixedOrderFormatter(
-                str(self.le_z_format.text()), float(self.le_z_div.text()))
+            self.cb.formatter = FixedOrderFormatter(str(self.le_z_format.text()), float(self.le_z_div.text()))
 
             self.cb.update_ticks()
-
-            self.cb.set_label(self.format_label(self.le_z_label.text()))
+            
+            title = self.format_label(str(self.le_z_label.text()))
+            title = '\n'.join(textwrap.wrap(title,int(70.*h/ftsz), replace_whitespace=False))
+            self.cb.set_label(title,fontname=ftnm)
             self.cb.draw_all()
             if self.cb_rasterize.isChecked():
                 self.cb.solids.set_rasterized(True)
@@ -403,6 +413,7 @@ class ExportWidget(QtGui.QWidget):
 
             self.fig.tight_layout()
             self.canvas.draw()
+            #update the parameters
             self.le_dpi.setText('%g,%g,%g'%(self.fig.dpi,self.get_dpi(1),self.get_dpi(2)))
             w,h = self.fig.get_size_inches()
             self.le_width.setText('%s'%w)

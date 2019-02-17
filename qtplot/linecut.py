@@ -361,12 +361,16 @@ class Linecut(QtGui.QDialog):
         
         if self.cb_include_z.checkState() == QtCore.Qt.Checked:
             title = '{0} {1}={2}'.format(title, otherlabel, z) if (otherlabel or float(z)!=0) else title
-
-        title = '\n'.join(textwrap.wrap(title, 60, replace_whitespace=False))
-        self.ax.set_title(title,fontsize=int(str(self.main.export_widget.le_font_size.text())))
+        
+        ftsz = int(str(self.main.export_widget.le_font_size.text()))
+        w,h = self.fig.get_size_inches()
+        title = '\n'.join(textwrap.wrap(title,int(80.*w/ftsz), replace_whitespace=False))
+        self.ax.set_title(title)
         
         self.ax.set_xlabel(xlabel)
-        self.ax.set_ylabel(ylabel)
+        title = ylabel
+        title = '\n'.join(textwrap.wrap(title,int(70.*h/ftsz), replace_whitespace=False))
+        self.ax.set_ylabel(title)
         traceLabel = self.main.name.replace('.dat','')
         traceLabel += ' %s'%z if (otherlabel or float(z)!=0) else ''
 
