@@ -139,13 +139,6 @@ class DatFile:
         return OrderedDict(zip(self.ids, self.data[row]))
 
     def get_data(self, x_name, y_name, z_name):
-        """
-        Procedure:
-        -   Find columns with size > 1 property (in metadata), these are the setpoints (values that are set in a scan)
-        -   Find unique values in the case of two setpoint columns
-        -   Pivot into matrix together with selected x, y, and z columns
-        -   Transpose to correct form by checking data ranges
-        """
         if self.data is None:
             return None
         if x_name == '':
@@ -154,52 +147,33 @@ class DatFile:
         if y_name != '' and self.ndim < 2:
             logger.warning('Ignoring the y-axis parameter since it is a 1D dataset')
             y_name = ''
-        setpoint_columns = list(self.sizes.keys())
-        if len(setpoint_columns) == 0:
+        if self.ndim == 0:
             logger.error('No setpoint columns with a size property were found')
             return None
-        elif len(setpoint_columns) == 1:
-            setpoint_columns.append('')
-        elif len(setpoint_columns) > 2:
-            logger.warning('Multiple setpoint columns with a size property were found, using the first two')
+        if self.ndim > 2:
+            logger.error('Do not support data > 2D')
+            return None
 
-        # Retrieve the setpoint data, start with 0 for y
-        x_setpoints = self.get_column(setpoint_columns[0])
-        y_setpoints = np.zeros(self.data.shape[0])
-        # The row numbers from the original .dat file
         row_numbers = np.arange(self.data.shape[0])
-        # Retrieve the x, y, and z data
         x_data = self.get_column(x_name)
         y_data = np.zeros(self.data.shape[0])
         z_data = self.get_column(z_name)
 
-        # Retrieve y setpoints and data if present
-        if len(setpoint_columns) > 1 and y_name != '':
-            y_setpoints = self.get_column(setpoint_columns[1])
+        # Retrieve y data if present
+        if self.ndim > 1 and y_name != '':
             y_data = self.get_column(y_name)
 
-        # Find all unique setpoint values
-        cols, col_ind = np.unique(x_setpoints, return_inverse=True)
-        rows, row_ind = np.unique(y_setpoints, return_inverse=True)
+        pivot = np.empty((np.ceil(float(self.data.shape[0])/self.shape[0])*self.shape[0],4))*np.nan
+        pivot[:,0] = x_data
+        pivot[:,1] = y_data
+        pivot[:,2] = z_data
+        pivot[:,3] = row_numbers
+        x = pivot[:,0].reshape((-1,self.shape[0]))
+        y = pivot[:,1].reshape((-1,self.shape[0]))
+        z = pivot[:,2].reshape((-1,self.shape[0]))
+        row_numbers = pivot[:,3].reshape((-1,self.shape[0]))
 
-        # Pivot all data into matrix using unique setpoint indices
-        pivot = np.zeros((len(rows), len(cols), 6)) * np.nan
-        data = np.vstack((x_setpoints, y_setpoints,
-                          x_data, y_data, z_data, row_numbers)).T
-        pivot[row_ind, col_ind] = data
-
-        x_setpoints = pivot[:,:,0]
-        y_setpoints = pivot[:,:,1]
-
-        x = pivot[:,:,2]
-        y = pivot[:,:,3]
-        z = pivot[:,:,4]
-
-        row_numbers = pivot[:,:,5]
-
-        return Data2D(x, y, z, x_setpoints, y_setpoints, row_numbers,
-                      x_name, y_name, z_name, setpoint_columns[0],
-                      setpoint_columns[1], self.filename, self.timestamp, self)
+        return Data2D(x, y, z, row_numbers, x_name, y_name, z_name, self.filename, self.timestamp, self)
 
 
 def create_kernel(x_dev, y_dev, cutoff, distr):
@@ -233,13 +207,10 @@ class Data2D:
     Class which represents 2d data as two matrices with x and y coordinates
     and one with values.
     """
-    def __init__(self, x, y, z, x_setpoints=[], y_setpoints=[], row_numbers=[],
-                 x_name='', y_name='', z_name='', x_setpoints_name='',
-                 y_setpoints_name='', filename='', timestamp='', dat_file=None,
-                 equidistant=(False, False), varying=(False, False)):
+    def __init__(self, x, y, z, row_numbers=[],
+                 x_name='', y_name='', z_name='',
+                 filename='', timestamp='', dat_file=None):
         self.x_name, self.y_name, self.z_name = x_name, y_name, z_name
-        self.x_setpoints_name = x_setpoints_name
-        self.y_setpoints_name = y_setpoints_name
         self.filename, self.timestamp = filename, timestamp
         self.dat_file = dat_file
 
@@ -253,38 +224,19 @@ class Data2D:
         col_range = np.abs(np.nanmax(x, axis=1) - np.nanmin(x, axis=1))
 
         if np.average(row_range) > np.average(col_range):
-            if x_setpoints is not None and y_setpoints is not None:
-                x_setpoints = x_setpoints.T
-                y_setpoints = y_setpoints.T
-
             x = x.T
             y = y.T
             z = z.T
 
             row_numbers = row_numbers.T
 
-        self.x_setpoints, self.y_setpoints = x_setpoints, y_setpoints
         self.x, self.y, self.z = x, y, z
-        self.row_numbers = row_numbers
-
-        self.equidistant = equidistant
-        self.varying = varying # make x or y uniformly spaced
+        self.row_numbers = row_numbers                              
         self.tri = None
 
         # Store column and row averages for linetrace lookup
         self.x_means = np.nanmean(self.x, axis=0)
         self.y_means = np.nanmean(self.y, axis=1)
-
-        if self.varying[0] is True or self.varying[1] is True:
-            minx = np.nanmin(x)
-            diffx = np.nanmean(np.diff(x, axis=1))
-            xrow = minx + np.arange(x.shape[1]) * diffx
-            self.x = np.tile(xrow, (x.shape[0], 1))
-
-            miny = np.nanmin(y)
-            diffy = np.nanmean(np.diff(y, axis=0))
-            yrow = miny + np.arange(y.shape[0]) * diffy
-            self.y = np.tile(yrow[:,np.newaxis], (1, y.shape[1]))
 
     def save(self, filename):
         """
@@ -308,24 +260,14 @@ class Data2D:
 
                 i = 1
 
-                if len(self.x_setpoints) != 0:
-                    f.write('# Column %d\n' % i)
-                    f.write('#\tname: %s\n' % self.x_setpoints_name)
-                    f.write('#\tsize: %d\n' % self.x_setpoints.shape[1])
-                    i += 1
-
-                if len(self.y_setpoints) != 0:
-                    f.write('# Column %d\n' % i)
-                    f.write('#\tname: %s\n' % self.y_setpoints_name)
-                    f.write('#\tsize: %d\n' % self.y_setpoints.shape[1])
-                    i += 1
-
                 f.write('# Column %d\n' % i)
                 f.write('#\tname: %s\n' % self.x_name)
+                f.write('#\tsize: %d\n' % self.x.shape[1])
                 i += 1
 
                 f.write('# Column %d\n' % i)
                 f.write('#\tname: %s\n' % self.y_name)
+                f.write('#\tsize: %d\n' % self.y.shape[0])
                 i += 1
 
                 f.write('# Column %d\n' % i)
@@ -335,11 +277,6 @@ class Data2D:
 
                 # Write formatted data
                 a = np.vstack((self.x.ravel(), self.y.ravel(), self.z.ravel()))
-
-                if len(self.y_setpoints) != 0:
-                    a = np.vstack((self.y_setpoints.ravel(), a))
-                if len(self.x_setpoints) != 0:
-                    a = np.vstack((self.x_setpoints.ravel(), a))
 
                 df = pd.DataFrame(a.T)
                 df.to_csv(f, sep='\t', float_format='%.12e', index=False,
@@ -652,13 +589,9 @@ class Data2D:
         return x_flip, y_flip
 
     def copy(self):
-        return Data2D(np.copy(self.x), np.copy(self.y), np.copy(self.z),
-                      np.copy(self.x_setpoints), np.copy(self.y_setpoints),
-                      np.copy(self.row_numbers),
+        return Data2D(np.copy(self.x), np.copy(self.y), np.copy(self.z), np.copy(self.row_numbers),
                       self.x_name, self.y_name, self.z_name,
-                      self.x_setpoints_name, self.y_setpoints_name,
-                      self.filename, self.timestamp, self.dat_file,
-                      self.equidistant, self.varying)
+                      self.filename, self.timestamp, self.dat_file)
 
     def abs(self):
         """Take the absolute value of every datapoint."""
