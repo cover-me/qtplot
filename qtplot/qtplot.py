@@ -843,6 +843,15 @@ class QTPlot(QtGui.QMainWindow):
             geo.moveTopLeft(geo.topLeft() + diff)
             i.setGeometry(geo)
 
+    def resizeEvent(self, event):
+        super(QTPlot, self).resizeEvent(event)
+        diff = event.size() - event.oldSize()
+        diff = QtCore.QPoint(diff.width(),0)
+        for i in [self.linecut,self.operations,self.settings]:
+            geo = i.geometry()
+            geo.moveTopLeft(geo.topLeft() + diff)
+            i.setGeometry(geo)
+
     def closeEvent(self, event):
         self.linecut.close()
         self.operations.close()
