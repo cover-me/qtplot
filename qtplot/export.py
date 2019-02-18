@@ -87,6 +87,7 @@ class ExportWidget(QtGui.QWidget):
 
         grid_general.addWidget(QtGui.QLabel('Rasterize'), 1, 5)
         self.cb_rasterize = QtGui.QCheckBox('')
+        self.cb_rasterize.setToolTip('Unchecked: use imshow()\nChecked: use pcolormesh(rasterized=True)')
         grid_general.addWidget(self.cb_rasterize, 1, 6)
 
         grid_general.addWidget(QtGui.QLabel('Hold'), 1, 7)
@@ -337,42 +338,49 @@ class ExportWidget(QtGui.QWidget):
                     self.main.linecut.resize(self.main.linecut.width(),self.main.linecut.height()+1)
                     self.main.linecut.resize(self.main.linecut.width(),sself.main.linecut.height()-1)
             self.filenames.append(os.path.splitext(self.format_label('<filename>'))[0])
+            
             # Get the data and colormap
             x, y, z = self.main.data.get_pcolor()
             cmap = self.main.canvas.colormap.get_mpl_colormap()
+            vmin, vmax = self.main.canvas.colormap.get_limits()
 
-            tri_checkboxes = [self.cb_tripcolor.checkState(),
-                              self.cb_triangulation.checkState()]
-
-            # If we are going to need to plot triangulation data, prepare
-            # the data so it can be plotted
-            if QtCore.Qt.Checked in tri_checkboxes:
-                if self.main.data.tri is None:
-                    self.main.data.generate_triangulation()
-
-                xc, yc = self.main.data.get_triangulation_coordinates()
-
-                tri = mpl.tri.Triangulation(xc, yc,
-                                            self.main.data.tri.simplices)
-
-            # Plot the data using either pcolormesh or tripcolor
-            if self.cb_tripcolor.checkState() != QtCore.Qt.Checked:
-                quadmesh = self.ax.pcolormesh(x, y, z,
-                                              cmap=cmap,
-                                              rasterized=self.cb_rasterize.isChecked())
-
-                quadmesh.set_clim(self.main.canvas.colormap.get_limits())
+            #plot using imshow if ...
+            if self.cb_rasterize.checkState()!= QtCore.Qt.Checked:
+                is_z_up = y[-1,0]>y[0,0]
+                xy_range = (x[0,0],x[0,-1],y[0,0],y[-1,0]) if is_z_up else (x[0,0],x[0,-1],y[-1,0],y[0,0])
+                origin = 'lower' if is_z_up else 'upper'
+                #though it can no longer be called as quadmesh..
+                quadmesh = self.ax.imshow(z,cmap=cmap,vmin=vmin,vmax=vmax,aspect='auto',interpolation='none',origin=origin,extent=xy_range)
             else:
-                quadmesh = self.ax.tripcolor(tri,
-                                             self.main.data.z.ravel(),
-                                             cmap=cmap, rasterized=self.cb_rasterize.isChecked())
+                tri_checkboxes = [self.cb_tripcolor.checkState(),
+                                  self.cb_triangulation.checkState()]
+                # If we are going to need to plot triangulation data, prepare
+                # the data so it can be plotted
+                if QtCore.Qt.Checked in tri_checkboxes:
+                    if self.main.data.tri is None:
+                        self.main.data.generate_triangulation()
+                    xc, yc = self.main.data.get_triangulation_coordinates()
+                    tri = mpl.tri.Triangulation(xc, yc,
+                                                self.main.data.tri.simplices)
 
-                quadmesh.set_clim(self.main.canvas.colormap.get_limits())
+                # Plot the data using either pcolormesh or tripcolor
+                if self.cb_tripcolor.checkState() != QtCore.Qt.Checked:
+                    quadmesh = self.ax.pcolormesh(x, y, z,
+                                                  cmap=cmap,
+                                                  rasterized=self.cb_rasterize.isChecked())
 
-            # Plot the triangulation
-            if self.cb_triangulation.checkState() == QtCore.Qt.Checked:
-                self.ax.triplot(tri, 'o-', color='black',
-                                linewidth=0.5, markersize=3)
+                    quadmesh.set_clim(vmin,vmax)
+                else:
+                    quadmesh = self.ax.tripcolor(tri,
+                                                 self.main.data.z.ravel(),
+                                                 cmap=cmap, rasterized=self.cb_rasterize.isChecked())
+
+                    quadmesh.set_clim(vmin,vmax)
+
+                # Plot the triangulation
+                if self.cb_triangulation.checkState() == QtCore.Qt.Checked:
+                    self.ax.triplot(tri, 'o-', color='black',
+                                    linewidth=0.5, markersize=3)
 
             self.ax.axis('tight')
             
@@ -407,10 +415,7 @@ class ExportWidget(QtGui.QWidget):
             title = '\n'.join(textwrap.wrap(title,int(70.*h/ftsz), replace_whitespace=False))
             self.cb.set_label(title,fontname=ftnm)
             self.cb.draw_all()
-            if self.cb_rasterize.isChecked():
-                self.cb.solids.set_rasterized(True)
-            else:
-                self.cb.solids.set_rasterized(False)
+            self.cb.solids.set_rasterized(True)
             # Plot the current linecut if neccesary
             if self.cb_linecut.checkState() == QtCore.Qt.Checked:
                 for linetrace in self.main.linecut.linetraces:
