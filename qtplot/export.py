@@ -348,11 +348,9 @@ class ExportWidget(QtGui.QWidget):
             if self.cb_rasterize.checkState()!= QtCore.Qt.Checked:
                 xy_range = (x[0,0],x[0,-1],y[0,0],y[-1,0])
                 #though it can no longer be called as quadmesh..
-                quadmesh = self.ax.imshow(z,cmap=cmap,vmin=vmin,vmax=vmax,aspect='auto',interpolation='none',origin='lower',extent=xy_range)
+                quadmesh = self.ax.imshow(z,cmap=cmap,vmin=vmin,vmax=vmax,interpolation='none')
                 if x[0,-1]<x[0,0]:
                     self.ax.set_xlim(x[0,-1],x[0,0])
-                else:
-                    self.ax.set_xlim(x[0,0],x[0,-1])
                 if y[-1,0]<y[0,0]:
                     self.ax.set_ylim(y[-1,0],y[0,0])
             else:
