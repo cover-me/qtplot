@@ -12,26 +12,34 @@ import io
 class ExportWidget(QtGui.QWidget):
     def __init__(self, main):
         QtGui.QWidget.__init__(self)
-
-        # Set some matplotlib font settings
-        _fontmap = { 'rm'  : 'DejaVu Sans',
-                    'it'  : 'DejaVu Sans:italic',
-                    'bf'  : 'DejaVu Sans:weight=bold',
-                    'sf'  : 'DejaVu Sans',
-                    'tt'  : 'DejaVu Sans Mono',
-                    'cal' : 'DejaVu Sans',}#took from matplotlib 3, seems useless
-        mpl.rcParams['mathtext.fontset'] = 'custom'
-        mpl.rc('mathtext',**_fontmap)
-
         self.main = main
-
         self.fig, self.ax = plt.subplots()
         self.filenames = []
         self.cb = None
         self.userDict={}
-
         self.init_ui()
-
+        self.init_mpl()
+    
+    def init_mpl(self):
+        # Set some matplotlib font settings
+        fnt = str(self.le_font.text())
+        _fontmap = { 'rm'  : fnt,
+                    'it'  : fnt,
+                    'bf'  : fnt,
+                    'sf'  : fnt,
+                    'tt'  : fnt,
+                    'cal' : fnt,}
+        mpl.rcParams['mathtext.fontset'] = 'custom'
+        mpl.rc('mathtext',**_fontmap)
+        ftsz = int(str(self.le_font_size.text()))
+        font = {
+                'family': fnt,
+                'size': ftsz
+            }
+        mpl.rc('font', **font)
+        mpl.rcParams['axes.titlesize'] = ftsz
+        mpl.rcParams['svg.fonttype'] = 'none'
+        
     def init_ui(self):
         self.canvas = FigureCanvasQTAgg(self.fig)
         self.toolbar = NavigationToolbar2QT(self.canvas, self)
@@ -73,12 +81,13 @@ class ExportWidget(QtGui.QWidget):
 
         grid_general.addWidget(QtGui.QLabel('DPI'), 1, 3)
         self.le_dpi = QtGui.QLineEdit('80')
-        self.le_dpi.setToolTip('This is the dpi for screen/copy/ppt/word purpose. The dpi of exported files is always 300')
+        self.le_dpi.setToolTip('DPI for screen,copy/ppt/word,exporting.')
         self.le_dpi.setMaximumWidth(50)
         grid_general.addWidget(self.le_dpi, 1, 4)
 
         grid_general.addWidget(QtGui.QLabel('Rasterize'), 1, 5)
         self.cb_rasterize = QtGui.QCheckBox('')
+        self.cb_rasterize.setToolTip('Unchecked: use imshow()\nChecked: use pcolormesh(rasterized=True)')
         grid_general.addWidget(self.cb_rasterize, 1, 6)
 
         grid_general.addWidget(QtGui.QLabel('Hold'), 1, 7)
@@ -199,7 +208,7 @@ class ExportWidget(QtGui.QWidget):
         self.cb_cmd.addItem("plt.text(1,0,'(%s %s %s) (%s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text(),self.main.width(),self.main.height()),verticalalignment='bottom',horizontalalignment='right',transform=self.fig.transFigure,fontsize=10);self.canvas.draw()#Add gamma info to plot")
         self.cb_cmd.addItem("self.populate_ui()#restore to last profile")
         self.cb_cmd.addItem("self.userDict={}")
-        self.cb_cmd.addItem("plt.gca();dpi=float(self.le_dpi.text());w=self.main.width();h=self.main.height();w1,h1=[x*self.fig.dpi for x in self.fig.get_size_inches()];w2=float(self.le_width.text())*dpi;h2=float(self.le_height.text())*dpi;self.main.resize(w+w2-w1,h+h2-h1);self.le_ans.setText('%s'%self.fig.get_size_inches())#Resize canvas")
+        self.cb_cmd.addItem("plt.gca();dpi=self.get_dpi(0);w=self.main.width();h=self.main.height();w1,h1=[x*self.fig.dpi for x in self.fig.get_size_inches()];w2=float(self.le_width.text())*dpi;h2=float(self.le_height.text())*dpi;self.main.resize(w+w2-w1,h+h2-h1);self.le_ans.setText('%s'%self.fig.get_size_inches())#Resize canvas")
 
         hbox_av.addWidget(self.cb_cmd)        
 
@@ -295,70 +304,98 @@ class ExportWidget(QtGui.QWidget):
                 for key_, item_ in item.items():
                     s = s.replace('<%s:%s>'%(key,key_), '%s'%item_)
         return s
-
+    
+    def get_format_axis_names(self):
+        xname = self.format_label(str(self.le_x_label.text()))
+        yname = self.format_label(str(self.le_y_label.text()))
+        zname = self.format_label(str(self.le_z_label.text()))
+        title = self.format_label(str(self.le_title.text()))
+        return (xname,yname,zname,title)
+    def get_dpi(self,index):
+        '''Return dpi setting value, index=0,1,2 for screen,copy/ppt/word,export'''
+        dpi_str = self.le_dpi.text()
+        dpi_list = self.le_dpi.text().split(',') if dpi_str else []
+        if index<len(dpi_list):
+            return float(dpi_list[index])
+        else:
+            return 80 if index<2 else 300
+        
     def on_update(self):
         """ Draw the entire plot """
         if self.main.data is not None:
-            font = {
-                'family': str(self.le_font.text()),
-                'size': int(str(self.le_font_size.text()))
-            }
-            mpl.rc('font', **font)
-
+            self.init_mpl()
             # Clear the plot
             if self.cb_hold.checkState() == QtCore.Qt.Unchecked:
                 self.filenames = []
                 self.ax.clear()
-                new_dpi = float(self.le_dpi.text())
+                new_dpi = self.get_dpi(0)
+                #refresh dpi setting for screen
                 if self.fig.dpi != new_dpi:
                     self.fig.set_dpi(new_dpi)
+                    self.main.resize(self.main.width(),self.main.height()+1)
+                    self.main.resize(self.main.width(),self.main.height()-1)
+                    self.main.linecut.fig.set_dpi(new_dpi)
+                    self.main.linecut.resize(self.main.linecut.width(),self.main.linecut.height()+1)
+                    self.main.linecut.resize(self.main.linecut.width(),sself.main.linecut.height()-1)
             self.filenames.append(os.path.splitext(self.format_label('<filename>'))[0])
+            
             # Get the data and colormap
             x, y, z = self.main.data.get_pcolor()
             cmap = self.main.canvas.colormap.get_mpl_colormap()
+            vmin, vmax = self.main.canvas.colormap.get_limits()
 
-            tri_checkboxes = [self.cb_tripcolor.checkState(),
-                              self.cb_triangulation.checkState()]
-
-            # If we are going to need to plot triangulation data, prepare
-            # the data so it can be plotted
-            if QtCore.Qt.Checked in tri_checkboxes:
-                if self.main.data.tri is None:
-                    self.main.data.generate_triangulation()
-
-                xc, yc = self.main.data.get_triangulation_coordinates()
-
-                tri = mpl.tri.Triangulation(xc, yc,
-                                            self.main.data.tri.simplices)
-
-            # Plot the data using either pcolormesh or tripcolor
-            if self.cb_tripcolor.checkState() != QtCore.Qt.Checked:
-                quadmesh = self.ax.pcolormesh(x, y, z,
-                                              cmap=cmap,
-                                              rasterized=self.cb_rasterize.isChecked())
-
-                quadmesh.set_clim(self.main.canvas.colormap.get_limits())
+            #plot using imshow if ...
+            if self.cb_rasterize.checkState()!= QtCore.Qt.Checked:
+                xy_range = (x[0,0],x[0,-1],y[0,0],y[-1,0])
+                #though it can no longer be called as quadmesh..
+                quadmesh = self.ax.imshow(z,cmap=cmap,vmin=vmin,vmax=vmax,aspect='auto',interpolation='none',origin='lower',extent=xy_range)
+                if x[0,-1]<x[0,0]:
+                    self.ax.set_xlim(x[0,-1],x[0,0])
+                if y[-1,0]<y[0,0]:
+                    self.ax.set_ylim(y[-1,0],y[0,0])
             else:
-                quadmesh = self.ax.tripcolor(tri,
-                                             self.main.data.z.ravel(),
-                                             cmap=cmap, rasterized=self.cb_rasterize.isChecked())
+                tri_checkboxes = [self.cb_tripcolor.checkState(),
+                                  self.cb_triangulation.checkState()]
+                # If we are going to need to plot triangulation data, prepare
+                # the data so it can be plotted
+                if QtCore.Qt.Checked in tri_checkboxes:
+                    if self.main.data.tri is None:
+                        self.main.data.generate_triangulation()
+                    xc, yc = self.main.data.get_triangulation_coordinates()
+                    tri = mpl.tri.Triangulation(xc, yc,
+                                                self.main.data.tri.simplices)
 
-                quadmesh.set_clim(self.main.canvas.colormap.get_limits())
+                # Plot the data using either pcolormesh or tripcolor
+                if self.cb_tripcolor.checkState() != QtCore.Qt.Checked:
+                    quadmesh = self.ax.pcolormesh(x, y, z,
+                                                  cmap=cmap,
+                                                  rasterized=self.cb_rasterize.isChecked())
 
-            # Plot the triangulation
-            if self.cb_triangulation.checkState() == QtCore.Qt.Checked:
-                self.ax.triplot(tri, 'o-', color='black',
-                                linewidth=0.5, markersize=3)
+                    quadmesh.set_clim(vmin,vmax)
+                else:
+                    quadmesh = self.ax.tripcolor(tri,
+                                                 self.main.data.z.ravel(),
+                                                 cmap=cmap, rasterized=self.cb_rasterize.isChecked())
+
+                    quadmesh.set_clim(vmin,vmax)
+
+                # Plot the triangulation
+                if self.cb_triangulation.checkState() == QtCore.Qt.Checked:
+                    self.ax.triplot(tri, 'o-', color='black',
+                                    linewidth=0.5, markersize=3)
 
             self.ax.axis('tight')
-
-            title = self.format_label(str(self.le_title.text()))
-            title += '' if len(self.filenames)<2 else  (' & ' + ' '.join(self.filenames[:-1]))
-            title = '\n'.join(textwrap.wrap(title, max(int(30*(self.main.width()/300.)),40), replace_whitespace=False))
+            
             # Set all the plot labels
-            self.ax.set_title(title,fontsize=int(str(self.le_font_size.text())))
-            self.ax.set_xlabel(self.format_label(self.le_x_label.text()))
-            self.ax.set_ylabel(self.format_label(self.le_y_label.text()))
+            ftsz = int(str(self.le_font_size.text()))
+            ftnm = str(self.le_font.text())
+            w,h = self.fig.get_size_inches()
+            title = self.format_label(str(self.le_title.text()))
+            title += '' if len(self.filenames)<2 or title=='' else  (' & ' + ' '.join(self.filenames[:-1]))
+            title = '\n'.join(textwrap.wrap(title,int(80.*w/ftsz), replace_whitespace=False))
+            self.ax.set_title(title,fontname=ftnm)
+            self.ax.set_xlabel(self.format_label(self.le_x_label.text()),fontname=ftnm)
+            self.ax.set_ylabel(self.format_label(self.le_y_label.text()),fontname=ftnm)
 
             # Set the axis tick formatters
             self.ax.xaxis.set_major_formatter(FixedOrderFormatter(
@@ -372,17 +409,15 @@ class ExportWidget(QtGui.QWidget):
             # Colorbar layout
             orientation = str(self.cb_cb_orient.currentText())
             self.cb = self.fig.colorbar(quadmesh, orientation=orientation)
-            self.cb.formatter = FixedOrderFormatter(
-                str(self.le_z_format.text()), float(self.le_z_div.text()))
+            self.cb.formatter = FixedOrderFormatter(str(self.le_z_format.text()), float(self.le_z_div.text()))
 
             self.cb.update_ticks()
-
-            self.cb.set_label(self.format_label(self.le_z_label.text()))
+            
+            title = self.format_label(str(self.le_z_label.text()))
+            title = '\n'.join(textwrap.wrap(title,int(70.*h/ftsz), replace_whitespace=False))
+            self.cb.set_label(title,fontname=ftnm)
             self.cb.draw_all()
-            if self.cb_rasterize.isChecked():
-                self.cb.solids.set_rasterized(True)
-            else:
-                self.cb.solids.set_rasterized(False)
+            self.cb.solids.set_rasterized(True)
             # Plot the current linecut if neccesary
             if self.cb_linecut.checkState() == QtCore.Qt.Checked:
                 for linetrace in self.main.linecut.linetraces:
@@ -392,9 +427,9 @@ class ExportWidget(QtGui.QWidget):
                         plt.axvline(linetrace.position, color='red')
 
             self.fig.tight_layout()
-
             self.canvas.draw()
-            self.le_dpi.setText('%s'%self.fig.dpi)
+            #update the parameters
+            self.le_dpi.setText('%g,%g,%g'%(self.fig.dpi,self.get_dpi(1),self.get_dpi(2)))
             w,h = self.fig.get_size_inches()
             self.le_width.setText('%s'%w)
             self.le_height.setText('%s'%h)
@@ -402,7 +437,7 @@ class ExportWidget(QtGui.QWidget):
     def on_copy(self):
         """ Copy the current plot to the clipboard """
         buf = io.BytesIO()
-        self.fig.savefig(buf,dpi=float(self.le_dpi.text()))
+        self.fig.savefig(buf,dpi=self.get_dpi(1))
         img = QtGui.QImage.fromData(buf.getvalue())
         QtGui.QApplication.clipboard().setImage(img)
         buf.close()
@@ -467,11 +502,12 @@ class ExportWidget(QtGui.QWidget):
         """ Export the current plot to a file """
         path = os.path.dirname(os.path.realpath(__file__))
 
-        filters = ('Portable Network Graphics (*.png);;'
+        filters = ('Scalable Vector Graphics (*.svg);;'
                    'Portable Document Format (*.pdf);;'
-                   'Postscript (*.ps);;'
                    'Encapsulated Postscript (*.eps);;'
-                   'Scalable Vector Graphics (*.svg)')
+                   'Postscript (*.ps);;'
+                   'Portable Network Graphics (*.png)'
+                   )
 
         filename = QtGui.QFileDialog.getSaveFileName(self,
                                                      caption='Export figure',
@@ -484,9 +520,7 @@ class ExportWidget(QtGui.QWidget):
             self.fig.set_size_inches(float(self.le_width.text()),
                                      float(self.le_height.text()))
 
-            dpi = 300
-
-            self.fig.savefig(filename, dpi=dpi, bbox_inches='tight')
+            self.fig.savefig(filename, dpi=self.get_dpi(2), bbox_inches='tight')
             self.fig.set_size_inches(previous_size)
 
             self.canvas.draw()

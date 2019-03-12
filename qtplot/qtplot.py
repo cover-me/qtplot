@@ -34,13 +34,13 @@ PROFILE_DEFAULTS = OrderedDict((
     ('max','1'),
     ('gamma','0'),
     ('auto_color',True),
-    ('title', '<filename><operations>'),
-    ('DPI', '80'),
-    ('rasterize', False),
+    ('title', '<filename>'),
+    ('DPI', '80,80,300'),
+    ('rasterize', True),
     ('hold', False),
     ('x_label', '<x>'),
     ('y_label', '<y>'),
-    ('z_label', '<z>'),
+    ('z_label', '<z><operations>'),
     ('x_format', '%%f'),
     ('y_format', '%%f'),
     ('z_format', '%%f'),
@@ -409,7 +409,7 @@ class QTPlot(QtGui.QMainWindow):
         self.resize(500, 800)
         self.move(200, 100)
         self.show()
-        self.linecut.resize(500, 400)
+        self.linecut.resize(520, 400)
         self.linecut.move(self.width()+220, 100)
         self.operations.resize(400, 200)
         self.operations.move(self.width()+220, 540)
@@ -481,7 +481,7 @@ class QTPlot(QtGui.QMainWindow):
 
     def load_dat_file(self, filename):
         """
-        Load a .dat or .npy file, it's .set file if present, update the GUI elements,
+        Load a .dat/.npy/.mtx file, it's .set file if present, update the GUI elements,
         and fire an on_data_change event to update the plots.
         """
         t0 = time()
@@ -673,7 +673,7 @@ class QTPlot(QtGui.QMainWindow):
 
     def on_refresh(self):
         new_filepath = str(self.le_path.text()).strip()
-        if os.path.isfile(new_filepath) and (new_filepath.endswith('.dat') or new_filepath.endswith('.npy')):
+        if os.path.isfile(new_filepath) and any([new_filepath.endswith(x) for x in ['.dat','.npy','.mtx']]):
             self.filename = new_filepath
             self.load_dat_file(self.filename)
         else:
@@ -818,8 +818,7 @@ class QTPlot(QtGui.QMainWindow):
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             url = str(event.mimeData().urls()[0].toString())
-
-            if url.endswith('.dat') or url.endswith('.npy') or (url.endswith('.ini') and self.name==os.path.basename(url)[:-4]):
+            if any([url.endswith(x) for x in ['.dat','.npy','.mtx']]) or (url.endswith('.ini') and self.name==os.path.basename(url)[:-4]):
                 event.accept()
 
     def dropEvent(self, event):
@@ -835,6 +834,23 @@ class QTPlot(QtGui.QMainWindow):
         else:
             self.le_path.setText(filepath)
             self.load_dat_file(filepath)
+            
+    def moveEvent(self, event):
+        super(QTPlot, self).moveEvent(event)
+        diff = event.pos() - event.oldPos()
+        for i in [self.linecut,self.operations,self.settings]:
+            geo = i.geometry()
+            geo.moveTopLeft(geo.topLeft() + diff)
+            i.setGeometry(geo)
+
+    def resizeEvent(self, event):
+        super(QTPlot, self).resizeEvent(event)
+        diff = event.size() - event.oldSize()
+        diff = QtCore.QPoint(diff.width(),0)
+        for i in [self.linecut,self.operations,self.settings]:
+            geo = i.geometry()
+            geo.moveTopLeft(geo.topLeft() + diff)
+            i.setGeometry(geo)
 
     def closeEvent(self, event):
         self.linecut.close()

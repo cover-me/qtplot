@@ -19,7 +19,7 @@ class Linetrace(plt.Line2D):
     to be able to store incremental linetraces in an array.
 
     x/y:        Arrays containing x and y data
-    type:       Type of linetrace, 'horizontal' or 'vertical'
+    type:       Type of linetrace, horizontal / vertical / diagonal
     traceLabel:   label containing infomation of the file name and the x/y coordinate at which the linetrace was taken
     """
 
@@ -356,17 +356,26 @@ class Linecut(QtGui.QDialog):
         self.xlabel, self.ylabel, self.otherlabel = xlabel, ylabel, otherlabel
         self.title = title
         self.x, self.y, self.z = x, y, z
-        self.ax.xaxis.set_major_formatter(FixedOrderFormatter(str(self.main.export_widget.le_x_format.text()), float(self.main.export_widget.le_x_div.text())))
+        if type=='horizontal':
+            self.ax.xaxis.set_major_formatter(FixedOrderFormatter(str(self.main.export_widget.le_x_format.text()), float(self.main.export_widget.le_x_div.text())))
+        elif type=='vertical':
+            self.ax.xaxis.set_major_formatter(FixedOrderFormatter(str(self.main.export_widget.le_y_format.text()), float(self.main.export_widget.le_y_div.text())))
+        else:
+            self.ax.xaxis.set_major_formatter(FixedOrderFormatter())
         self.ax.yaxis.set_major_formatter(FixedOrderFormatter(str(self.main.export_widget.le_z_format.text()), float(self.main.export_widget.le_z_div.text())))
         
         if self.cb_include_z.checkState() == QtCore.Qt.Checked:
             title = '{0} {1}={2}'.format(title, otherlabel, z) if (otherlabel or float(z)!=0) else title
-
-        title = '\n'.join(textwrap.wrap(title, 60, replace_whitespace=False))
-        self.ax.set_title(title,fontsize=int(str(self.main.export_widget.le_font_size.text())))
+        
+        ftsz = int(str(self.main.export_widget.le_font_size.text()))
+        w,h = self.fig.get_size_inches()
+        title = '\n'.join(textwrap.wrap(title,int(80.*w/ftsz), replace_whitespace=False))
+        self.ax.set_title(title)
         
         self.ax.set_xlabel(xlabel)
-        self.ax.set_ylabel(ylabel)
+        title = ylabel
+        title = '\n'.join(textwrap.wrap(title,int(70.*h/ftsz), replace_whitespace=False))
+        self.ax.set_ylabel(title)
         traceLabel = self.main.name.replace('.dat','')
         traceLabel += ' %s'%z if (otherlabel or float(z)!=0) else ''
 

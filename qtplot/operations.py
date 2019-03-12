@@ -340,7 +340,7 @@ class Operations(QtGui.QDialog):
 
             kwargs = op.get_parameters()[1]
             _ = [i[0:3] if type(i)==str else str(i) for i in kwargs.values()]
-            self.op_str += ' %s[%s];'%(op.name,','.join(_))
+            self.op_str += '%s[%s];'%(op.name,','.join(_))
             op.func(copy, **kwargs)
         return copy
 
