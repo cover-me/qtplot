@@ -346,11 +346,13 @@ class ExportWidget(QtGui.QWidget):
 
             #plot using imshow if ...
             if self.cb_rasterize.checkState()!= QtCore.Qt.Checked:
-                is_z_up = y[-1,0]>y[0,0]
-                xy_range = (x[0,0],x[0,-1],y[0,0],y[-1,0]) if is_z_up else (x[0,0],x[0,-1],y[-1,0],y[0,0])
-                origin = 'lower' if is_z_up else 'upper'
+                xy_range = (x[0,0],x[0,-1],y[0,0],y[-1,0])
                 #though it can no longer be called as quadmesh..
-                quadmesh = self.ax.imshow(z,cmap=cmap,vmin=vmin,vmax=vmax,aspect='auto',interpolation='none',origin=origin,extent=xy_range)
+                quadmesh = self.ax.imshow(z,cmap=cmap,vmin=vmin,vmax=vmax,aspect='auto',interpolation='none',origin='lower',extent=xy_range)
+                if x[-1,0]<x[0,0]:
+                    self.ax.set_xlim(x[-1,0],x[0,0])
+                if y[-1,0]<y[0,0]:
+                    self.ax.set_ylim(y[-1,0],y[0,0])
             else:
                 tri_checkboxes = [self.cb_tripcolor.checkState(),
                                   self.cb_triangulation.checkState()]
