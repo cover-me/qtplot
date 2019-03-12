@@ -170,21 +170,21 @@ class DatFile:
         if self.ndim > 2:
             logger.error('Do not support data > 2D')
             return None
-
-        row_numbers = np.arange(self.data.shape[0])
+        dp_numbers = self.data.shape[0]
+        row_numbers = np.arange(dp_numbers)
         x_data = self.get_column(x_name)
-        y_data = np.zeros(self.data.shape[0])
+        y_data = np.zeros(dp_numbers)
         z_data = self.get_column(z_name)
 
         # Retrieve y data if present
         if self.ndim > 1 and y_name != '':
             y_data = self.get_column(y_name)
 
-        pivot = np.empty((np.ceil(float(self.data.shape[0])/self.shape[0])*self.shape[0],4))*np.nan
-        pivot[:,0] = x_data
-        pivot[:,1] = y_data
-        pivot[:,2] = z_data
-        pivot[:,3] = row_numbers
+        pivot = np.empty((np.ceil(float(dp_numbers)/self.shape[0])*self.shape[0],4))*np.nan
+        pivot[:dp_numbers,0] = x_data
+        pivot[:dp_numbers,1] = y_data
+        pivot[:dp_numbers,2] = z_data
+        pivot[:dp_numbers,3] = row_numbers
         x = pivot[:,0].reshape((-1,self.shape[0]))
         y = pivot[:,1].reshape((-1,self.shape[0]))
         z = pivot[:,2].reshape((-1,self.shape[0]))
