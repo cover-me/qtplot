@@ -178,3 +178,7 @@ Do not let linecuts and operations always on top of the main window.
 ## Newer screenshots
 ![alt tag](screenshot2.png)
 ![alt tag](screenshot3.png)
+
+<video source src="/images/qtplot_with_qtlab.mp4" type="video/mp4" controls preload></video>
+
+<video source src="/images/qtplot_plot_replot.mp4" type="video/mp4" controls preload></video>
