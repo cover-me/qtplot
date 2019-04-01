@@ -1,5 +1,6 @@
 ![alt tag](screenshot.png)
 The screenshot is from forked project.
+
 ## Introduction
 
 This is a project forked from Rubenknex/qtplot. The original one is already a very powerful program to plot 1d and 2d data. I did a little modification: 
@@ -10,6 +11,11 @@ This is a project forked from Rubenknex/qtplot. The original one is already a ve
 * A place to run python commands directly.
 * Other features: Improve the "incremental" mode for better hystersis diagrams with multiple lines; Add filters that subtract Rin and normalize G/R to quantuam conductance/resistance respectively; Show multiple 2D graphs on a signle canvas. Optimize the GUI.
 * ...
+
+This [video](https://cover-me.github.io/images/qtplot_with_qtlab.mp4) demos how it plots real-time data with qtlab.
+
+This [video](https://cover-me.github.io/images/qtplot_plot_replot.mp4) shows how to plot data and reproduce the figure.
+
 
 
 ## Installation
@@ -178,7 +184,3 @@ Do not let linecuts and operations always on top of the main window.
 ## Newer screenshots
 ![alt tag](screenshot2.png)
 ![alt tag](screenshot3.png)
-
-<video source src="/images/qtplot_with_qtlab.mp4" type="video/mp4" controls preload></video>
-
-<video source src="/images/qtplot_plot_replot.mp4" type="video/mp4" controls preload></video>
