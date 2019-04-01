@@ -1,5 +1,5 @@
 ![alt tag](screenshot.png)
-The screenshot is from forked project.
+This screenshot is from forked project. Newer screenshots are available at the end of this file.
 
 ## Introduction
 
