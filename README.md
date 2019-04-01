@@ -12,7 +12,7 @@ This is a project forked from Rubenknex/qtplot. The original one is already a ve
 * Other features: Improve the "incremental" mode for better hystersis diagrams with multiple lines; Add filters that subtract Rin and normalize G/R to quantuam conductance/resistance respectively; Show multiple 2D graphs on a signle canvas. Optimize the GUI.
 * ...
 
-This [video](https://cover-me.github.io/images/qtplot_with_qtlab.mp4) demos how it plots real-time data with qtlab.
+This [video](https://cover-me.github.io/images/qtplot_with_qtlab.mp4) demos how it plots real-time data with [qtlab](https://github.com/heeres/qtlab).
 
 This [video](https://cover-me.github.io/images/qtplot_plot_replot.mp4) shows how to plot data and reproduce the figure.
 
@@ -167,19 +167,6 @@ add a new line with `data._file.flush()` below `data.create_file()`, the meta in
 
 Let's assume there is another program taking data and saving data into a .dat file every now and then. It is OK to update the plot by updating the .dat file and tell qtplot to reload that .dat file, for thousands of times. The operating system may do something to take care of file I/Os to save your disk's life. A more efficient way is to create a memory mapped .npy file and tell qtplot to load that file. Qtplot will memory-map that file too, so the data is shared between programs in memory directly.
 
-## To Do (Maybe we could leave it as it is. Not big problems...)
-
-Fix the strange behaviour when plot the second line.
-
-Speed up for realtime plotting (log, data,...)
-
-Abitary linecut doesn't show up in export.
-
-3D data support.
-
-Do not let linecuts and operations always on top of the main window.
-
-...
 
 ## Newer screenshots
 ![alt tag](screenshot2.png)
