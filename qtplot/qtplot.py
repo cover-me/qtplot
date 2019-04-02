@@ -34,13 +34,13 @@ PROFILE_DEFAULTS = OrderedDict((
     ('max','1'),
     ('gamma','0'),
     ('auto_color',True),
-    ('title', '<filename>'),
+    ('title', '<filename> <operations>'),
     ('DPI', '80,80,300'),
     ('rasterize', True),
     ('hold', False),
     ('x_label', '<x>'),
     ('y_label', '<y>'),
-    ('z_label', '<z><operations>'),
+    ('z_label', '<z>'),
     ('x_format', '%%f'),
     ('y_format', '%%f'),
     ('z_format', '%%f'),
@@ -84,7 +84,7 @@ class QTPlot(QtGui.QMainWindow):
         
         self.init_logging()
 
-        self.dat_file = DatFile()
+        self.dat_file = DatFile(self)
         self.linecut = Linecut(self)
         self.operations = Operations(self)
         self.settings = Settings(self)
@@ -801,7 +801,8 @@ class QTPlot(QtGui.QMainWindow):
 
         filters = ('QTLab data format (*.dat);;'
                    'NumPy binary matrix format (*.npy);;'
-                   'MATLAB matrix format (*.mat)')
+                   'MATLAB matrix format (*.mat);;'
+                   'Spyview matrix format (*.mtx)')
 
         filename = QtGui.QFileDialog.getSaveFileName(self,
                                                      caption='Save file',

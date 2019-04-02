@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class DatFile:
     """ Class which contains the column based DataFrame of the data. """
 
-    def __init__(self):
+    def __init__(self, main):
         self.filename = None
         self.timestamp = ''
         self.ids = []#for qtlab data, ids and labels are the same.
@@ -25,6 +25,7 @@ class DatFile:
         self.ndim = 0
         self.qtlab_settings = OrderedDict()
         self.data = None
+        self.main = main
     
     def update_file(self, filename):
         if self.filename != filename:
@@ -237,6 +238,7 @@ class Data2D:
         # We don't select this anymore, so we transpose the matrices such that
         # the range of values on a row of the x-coordinate matrix is larger
         # than for a column, which is a reasonable assumption.
+        # not necessary for plotting. but needed for filters and exporting
         row_range = np.abs(np.nanmax(x, axis=0) - np.nanmin(x, axis=0))
         col_range = np.abs(np.nanmax(x, axis=1) - np.nanmin(x, axis=1))
 
@@ -244,8 +246,17 @@ class Data2D:
             x = x.T
             y = y.T
             z = z.T
-
             row_numbers = row_numbers.T
+        if x[0,0]>x[0,-1]:
+            x = np.fliplr(x)
+            y = np.fliplr(y)
+            z = np.fliplr(z)
+            row_numbers = np.fliplr(row_numbers)
+        if y[0,0]>y[-1,0]:
+            x = np.flipud(x)
+            y = np.flipud(y)
+            z = np.flipud(z)
+            row_numbers = np.flipud(row_numbers)          
 
         self.x, self.y, self.z = x, y, z
         self.row_numbers = row_numbers                              
@@ -255,20 +266,21 @@ class Data2D:
         self.x_means = np.nanmean(self.x, axis=0)
         self.y_means = np.nanmean(self.y, axis=1)
     
-    def save_meta(self,f):
+    def save_meta(self,):
+        xlabel, ylabel, zlabel, title = self.dat_file.main.export_widget.get_format_axis_names()
         f.write('# Filename: %s\n' % self.filename)
         f.write('# Timestamp: %s\n\n' % self.timestamp)
         i = 1
         f.write('# Column %d\n' % i)
-        f.write('#\tname: %s\n' % self.x_name)
+        f.write('#\tname: %s\n' % xlabel)
         f.write('#\tsize: %d\n' % self.x.shape[1])
         i += 1
         f.write('# Column %d\n' % i)
-        f.write('#\tname: %s\n' % self.y_name)
+        f.write('#\tname: %s\n' % ylabel)
         f.write('#\tsize: %d\n' % self.y.shape[0])
         i += 1
         f.write('# Column %d\n' % i)
-        f.write('#\tname: %s\n' % self.z_name)
+        f.write('#\tname: %s\n' % zlabel)
         f.write('\n')
         
     def save(self, filename):
@@ -278,7 +290,6 @@ class Data2D:
         format (str): .npy / .mat / .dat
         """
         _, ext = os.path.splitext(filename)
-
         if ext == '.npy':
             with open(filename[:-3]+'meta.txt', 'w') as f:
                 self.save_meta(f)
@@ -290,12 +301,22 @@ class Data2D:
         elif ext == '.dat':
             with open(filename, 'w') as f:
                 self.save_meta(f)
-                
                 # Write formatted data
                 a = np.vstack((self.x.ravel(), self.y.ravel(), self.z.ravel()))
                 df = pd.DataFrame(a.T)
                 df.to_csv(f, sep='\t', float_format='%.12e', index=False,
                           header=False)
+        elif ext == '.mtx':
+            with open(filename[:-3]+'mtx', 'wb') as f:
+                xlabel, ylabel, zlabel, title = self.dat_file.main.export_widget.get_format_axis_names()
+                xmin = self.x[0,0]
+                xmax = self.x[0,-1]
+                ymin = self.y[0,0]
+                ymax = self.y[-1,0]
+                ny, nx = np.shape(self.y)
+                f.write('Units, %s,%s, %s, %s,%s, %s, %s,None(qtplot), 0, 1\n'%(zlabel,xlabel,xmin,xmax,ylabel,ymin,ymax))
+                f.write('%d %d 1 %d\n'%(nx,ny,self.z.dtype.itemsize))
+                self.z.T.ravel().tofile(f)
 
     def set_data(self, x, y, z):
         self.x, self.y, self.z = x, y, z

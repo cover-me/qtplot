@@ -471,11 +471,14 @@ class ExportWidget(QtGui.QWidget):
             self.main.profiles_dir = self.main.operations_dir
             if not os.path.isdir(self.main.operations_dir):
                 os.mkdir(self.main.operations_dir)
+            # save parameters and settings
             self.main.save_state(self.main.name+'.ini')
+            # save .mtx file
+            self.main.data.save(os.path.join(self.main.operations_dir,self.main.name+'.mtx'))
             # restore them back
             self.main.operations_dir = old1
             self.main.profiles_dir = old2
-            # shape.ActionSettings[0].Hyperlink.Address = pp
+            # shape.ActionSettings[0].Hyperlink.Address = 
 
     def on_to_word(self):
         """ Some win32 COM magic to interact with word """
