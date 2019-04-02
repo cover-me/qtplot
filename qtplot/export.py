@@ -474,7 +474,7 @@ class ExportWidget(QtGui.QWidget):
             # save parameters and settings
             self.main.save_state(self.main.name+'.ini')
             # save .mtx file
-            self.main.data.save(os.path.join(self.main.operations_dir,self.main.name+'.mtx'))
+            self.main.data.save(os.path.join(self.main.operations_dir,self.main.name[:-4]+'.mtx'))
             # restore them back
             self.main.operations_dir = old1
             self.main.profiles_dir = old2

@@ -3,6 +3,7 @@ import logging
 from collections import OrderedDict
 import mmap
 import numpy as np
+import math
 from scipy import ndimage, interpolate, io
 from scipy.spatial import qhull
 from pandas.io.api import read_table
@@ -304,7 +305,7 @@ class Data2D:
                 df.to_csv(f, sep='\t', float_format='%.12e', index=False,
                           header=False)
         elif ext == '.mtx':
-            with open(filename[:-3]+'mtx', 'wb') as f:
+            with open(filename, 'wb') as f:
                 xlabel, ylabel, zlabel, title = self.dat_file.main.export_widget.get_format_axis_names()
                 xmin = self.x[0,0]
                 xmax = self.x[0,-1]
@@ -587,12 +588,16 @@ class Data2D:
         self.flip_axes(*self.is_flipped())
 
     def crop(self, left=0, right=-1, bottom=0, top=-1):
-        """Crop a region of the data by the columns and rows."""
+        """Crop a region of the data by the columns and rows. Last value included"""
         if right < 0:
             right = self.z.shape[1] + right + 1
+        else:
+            right += 1
 
         if top < 0:
             top = self.z.shape[0] + top + 1
+        else:
+            top += 1
 
         if (left < right and bottom < top and
             0 <= left <= self.z.shape[1] and 0 <= right <= self.z.shape[1] and
@@ -748,8 +753,7 @@ class Data2D:
         """Perform a low-pass filter."""
         kernel = create_kernel(x_width, y_height, 7, method)
         self.z = ndimage.filters.convolve(self.z, kernel)
-
-        self.z = np.ma.masked_invalid(self.z)
+        # self.z = np.ma.masked_invalid(self.z) masked array doesn't works with np.tofile() (for saving as .mtx)
 
     def negate(self):
         """Negate every datapoint."""
@@ -868,3 +872,12 @@ class Data2D:
         Amp = a_I/a_V
         self.z = self.z*Amp
         self.z = self.z/(1-(self.z*Rin))/G2
+        
+    def xy_limit(self,xmin,xmax,ymin,ymax):
+        '''Crop data to fit x and y axes range'''
+        if not np.all(np.isnan([xmin,xmax,ymin,ymax])):
+            x1 = 0 if math.isnan(xmin) else np.searchsorted(self.x[0],xmin)
+            x2 = -1 if math.isnan(xmax) else np.searchsorted(self.x[0],xmax,'right')-1
+            y1 = 0 if math.isnan(ymin) else np.searchsorted(self.y[:,0],ymin)
+            y2 = -1 if math.isnan(ymax) else np.searchsorted(self.y[:,0],ymax,'right')-1
+            self.crop(x1,x2,y1,y2)
