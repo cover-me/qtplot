@@ -32,7 +32,7 @@ class DatFile:
             logger.info('Loading a new file: %s' %filename)
             if self.data is not None:
                 del self.data
-            self.__init__()
+            self.__init__(self.main)
             self.filename = filename
             self.load_qtlab_settings()# load .set file
             self.load_metadata()# load metadata
@@ -266,7 +266,7 @@ class Data2D:
         self.x_means = np.nanmean(self.x, axis=0)
         self.y_means = np.nanmean(self.y, axis=1)
     
-    def save_meta(self,):
+    def save_meta(self,f):
         xlabel, ylabel, zlabel, title = self.dat_file.main.export_widget.get_format_axis_names()
         f.write('# Filename: %s\n' % self.filename)
         f.write('# Timestamp: %s\n\n' % self.timestamp)
