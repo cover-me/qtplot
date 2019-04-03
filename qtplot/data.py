@@ -312,7 +312,7 @@ class Data2D:
                 ymin = self.y[0,0]
                 ymax = self.y[-1,0]
                 ny, nx = np.shape(self.y)
-                f.write('Units, %s,%s, %s, %s,%s, %s, %s,None(qtplot), 0, 1\n'%(zlabel,xlabel,xmin,xmax,ylabel,ymin,ymax))
+                f.write('Units, %s,%s, %s, %s,%s, %s, %s,None(qtplot), 0, 1\n'%(zlabel.replace(',','_'),xlabel.replace(',','_'),xmin,xmax,ylabel.replace(',','_'),ymin,ymax))
                 f.write('%d %d 1 %d\n'%(nx,ny,self.z.dtype.itemsize))
                 self.z.T.ravel().tofile(f)
 

@@ -336,7 +336,7 @@ class ExportWidget(QtGui.QWidget):
                     self.main.resize(self.main.width(),self.main.height()-1)
                     self.main.linecut.fig.set_dpi(new_dpi)
                     self.main.linecut.resize(self.main.linecut.width(),self.main.linecut.height()+1)
-                    self.main.linecut.resize(self.main.linecut.width(),sself.main.linecut.height()-1)
+                    self.main.linecut.resize(self.main.linecut.width(),self.main.linecut.height()-1)
             self.filenames.append(os.path.splitext(self.format_label('<filename>'))[0])
             
             # Get the data and colormap
