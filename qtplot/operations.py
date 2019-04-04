@@ -20,6 +20,7 @@ class Operation(QtGui.QWidget):
         self.func = func
         self.items = {}
         self.types = {}
+        self.para_names = ()
 
         height = 1
 
@@ -27,20 +28,18 @@ class Operation(QtGui.QWidget):
         # parameter widget depending on the data type
         for widget in widgets:
             w_name, data = widget
-
+            
             if type(data) == bool:
                 checkbox = QtGui.QCheckBox(w_name)
                 checkbox.setChecked(data)
                 checkbox.stateChanged.connect(self.main.on_data_change)
                 layout.addWidget(checkbox, height, 2)
-
                 self.items[w_name] = checkbox
             elif type(data) == int or type(data) == float:
                 lineedit = QtGui.QLineEdit(str(data))
                 lineedit.setValidator(QtGui.QDoubleValidator())
                 layout.addWidget(QtGui.QLabel(w_name), height, 1)
                 layout.addWidget(lineedit, height, 2)
-
                 self.items[w_name] = lineedit
             elif type(data) == list:
                 layout.addWidget(QtGui.QLabel(w_name), height, 1)
@@ -48,10 +47,10 @@ class Operation(QtGui.QWidget):
                 combobox.activated.connect(self.main.on_data_change)
                 combobox.addItems(data)
                 layout.addWidget(combobox, height, 2)
-
                 self.items[w_name] = combobox
 
             self.types[w_name] = type(data)
+            self.para_names += (w_name,)
 
             height += 1
 
@@ -184,7 +183,8 @@ class Operations(QtGui.QDialog):
             'yderiv': [Data2D.yderiv, [('method', ['midpoint',
                                                    '2nd order central diff'])]],
             'r_in_R2': [Data2D.R_in_R2, [('a_I',1e-7),('a_V',1e-3),('Rin',4100)]],
-            'g_in_G2': [Data2D.G_in_G2, [('a_I',1e-6),('a_V',1e-5),('Rin',4100)]]
+            'g_in_G2': [Data2D.G_in_G2, [('a_I',1e-6),('a_V',1e-5),('Rin',4100)]],
+            'xy_limit' : [Data2D.xy_limit, [('xmin',float('nan')),('xmax',float('nan')),('ymin',float('nan')),('ymax',float('nan'))]]
         }
 
         self.options = QtGui.QListWidget(self)
@@ -338,9 +338,10 @@ class Operations(QtGui.QDialog):
                         op.set_parameter('type', self.main.canvas.line_type)
                         op.set_parameter('position', self.main.canvas.line_coord)
 
-            kwargs = op.get_parameters()[1]
-            _ = [i[0:3] if type(i)==str else str(i) for i in kwargs.values()]
+            _ = [i[0:3] if type(i)==str else str(i) for i in [op.get_parameter(name) for name in op.para_names]]#function parameters
             self.op_str += '%s[%s];'%(op.name,','.join(_))
+            
+            kwargs = op.get_parameters()[1]
             op.func(copy, **kwargs)
         return copy
 

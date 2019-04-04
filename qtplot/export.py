@@ -336,7 +336,7 @@ class ExportWidget(QtGui.QWidget):
                     self.main.resize(self.main.width(),self.main.height()-1)
                     self.main.linecut.fig.set_dpi(new_dpi)
                     self.main.linecut.resize(self.main.linecut.width(),self.main.linecut.height()+1)
-                    self.main.linecut.resize(self.main.linecut.width(),sself.main.linecut.height()-1)
+                    self.main.linecut.resize(self.main.linecut.width(),self.main.linecut.height()-1)
             self.filenames.append(os.path.splitext(self.format_label('<filename>'))[0])
             
             # Get the data and colormap
@@ -347,12 +347,8 @@ class ExportWidget(QtGui.QWidget):
             #plot using imshow if ...
             if self.cb_rasterize.checkState()!= QtCore.Qt.Checked:
                 xy_range = (x[0,0],x[0,-1],y[0,0],y[-1,0])
-                #though it can no longer be called as quadmesh..
+                #though it can no longer be called as quadmesh.., there may be white spaces near axes but exported files looks fine.
                 quadmesh = self.ax.imshow(z,cmap=cmap,vmin=vmin,vmax=vmax,aspect='auto',interpolation='none',origin='lower',extent=xy_range)
-                if x[0,-1]<x[0,0]:
-                    self.ax.set_xlim(x[0,-1],x[0,0])
-                if y[-1,0]<y[0,0]:
-                    self.ax.set_ylim(y[-1,0],y[0,0])
             else:
                 tri_checkboxes = [self.cb_tripcolor.checkState(),
                                   self.cb_triangulation.checkState()]
@@ -369,7 +365,7 @@ class ExportWidget(QtGui.QWidget):
                 if self.cb_tripcolor.checkState() != QtCore.Qt.Checked:
                     quadmesh = self.ax.pcolormesh(x, y, z,
                                                   cmap=cmap,
-                                                  rasterized=self.cb_rasterize.isChecked())
+                                                  rasterized=self.cb_rasterize.isChecked())#always be true... or there will be white spaces
 
                     quadmesh.set_clim(vmin,vmax)
                 else:
@@ -417,7 +413,7 @@ class ExportWidget(QtGui.QWidget):
             title = '\n'.join(textwrap.wrap(title,int(70.*h/ftsz), replace_whitespace=False))
             self.cb.set_label(title,fontname=ftnm)
             self.cb.draw_all()
-            self.cb.solids.set_rasterized(True)
+            self.cb.solids.set_rasterized(True)#or there will be white spaces.
             # Plot the current linecut if neccesary
             if self.cb_linecut.checkState() == QtCore.Qt.Checked:
                 for linetrace in self.main.linecut.linetraces:
@@ -471,11 +467,14 @@ class ExportWidget(QtGui.QWidget):
             self.main.profiles_dir = self.main.operations_dir
             if not os.path.isdir(self.main.operations_dir):
                 os.mkdir(self.main.operations_dir)
+            # save parameters and settings
             self.main.save_state(self.main.name+'.ini')
+            # save .mtx file
+            self.main.data.save(os.path.join(self.main.operations_dir,self.main.name[:-4]+'.mtx'))
             # restore them back
             self.main.operations_dir = old1
             self.main.profiles_dir = old2
-            # shape.ActionSettings[0].Hyperlink.Address = pp
+            # shape.ActionSettings[0].Hyperlink.Address = 
 
     def on_to_word(self):
         """ Some win32 COM magic to interact with word """
@@ -502,8 +501,8 @@ class ExportWidget(QtGui.QWidget):
         """ Export the current plot to a file """
         path = os.path.dirname(os.path.realpath(__file__))
 
-        filters = ('Scalable Vector Graphics (*.svg);;'
-                   'Portable Document Format (*.pdf);;'
+        filters = ('Portable Document Format (*.pdf);;'
+                   'Scalable Vector Graphics (*.svg);;'
                    'Encapsulated Postscript (*.eps);;'
                    'Postscript (*.ps);;'
                    'Portable Network Graphics (*.png)'

@@ -62,11 +62,15 @@ class Settings(QtGui.QDialog):
         #self.b_remove.setMaximumWidth(50)
         hbl_list.addWidget(self.b_remove)
 
-        self.b_save_state = QtGui.QPushButton('Save current state', self)
+        self.b_save_state = QtGui.QPushButton('Save state', self)
         self.b_save_state.clicked.connect(self.on_save_state)
         #self.b_add.setMaximumWidth(50)
         hbl_list.addWidget(self.b_save_state)
 
+        self.b_open_folder = QtGui.QPushButton('Open folder', self)
+        self.b_open_folder.clicked.connect(self.on_b_open_folder)
+        hbl_list.addWidget(self.b_open_folder)
+        
         #"""
         # Open directory
         hbox = QtGui.QHBoxLayout()
@@ -212,6 +216,9 @@ class Settings(QtGui.QDialog):
     def on_save_state(self, event):
         file = str(self.lw_profiles.currentItem().text())
         self.main.save_state(file)
+    
+    def on_b_open_folder(self):
+        os.startfile(self.main.profiles_dir)
 
     def on_item_changed(self, widget):
         state = widget.checkState(0)
