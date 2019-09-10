@@ -393,10 +393,20 @@ class QTPlot(QtGui.QMainWindow):
         
         self.status_bar = QtGui.QStatusBar()
         self.l_position = QtGui.QLabel('(x, y)')
+        self.l_position.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse|QtCore.Qt.TextSelectableByKeyboard)
         self.status_bar.addWidget(self.l_position,1)
-        self.l_slope = QtGui.QLabel('(k, 1/k)')
+        
+        self.l_linepos = QtGui.QLabel('')
+        self.l_linepos.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse|QtCore.Qt.TextSelectableByKeyboard)
+        self.l_linepos.setToolTip('Linecut position. [x1,y1],[x2,y2] or so')
+        self.status_bar.addWidget(self.l_linepos)
+        
+        self.l_slope = QtGui.QLabel('k')
+        self.l_slope.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse|QtCore.Qt.TextSelectableByKeyboard)
+        self.l_slope.setToolTip('Linecut slope')
         self.status_bar.addWidget(self.l_slope)
         self.load_time = QtGui.QLabel('t (t_max)')
+        self.load_time.setToolTip('Loading time (max loading time) in ms')
         self.status_bar.addWidget(self.load_time)     
         self.status_bar.setMinimumWidth(50)
         self.setStatusBar(self.status_bar)

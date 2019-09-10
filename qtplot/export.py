@@ -87,7 +87,7 @@ class ExportWidget(QtGui.QWidget):
 
         grid_general.addWidget(QtGui.QLabel('Rasterize'), 1, 5)
         self.cb_rasterize = QtGui.QCheckBox('')
-        self.cb_rasterize.setToolTip('Unchecked: use imshow()\nChecked: use pcolormesh(rasterized=True)')
+        self.cb_rasterize.setToolTip('Unchecked: use imshow(), there may be white spaces near axes but exported images are fine.\nChecked: use pcolormesh(rasterized=True)')
         grid_general.addWidget(self.cb_rasterize, 1, 6)
 
         grid_general.addWidget(QtGui.QLabel('Hold'), 1, 7)
@@ -348,6 +348,7 @@ class ExportWidget(QtGui.QWidget):
             if self.cb_rasterize.checkState()!= QtCore.Qt.Checked:
                 xy_range = (x[0,0],x[0,-1],y[0,0],y[-1,0])
                 #though it can no longer be called as quadmesh.., there may be white spaces near axes but exported files looks fine.
+                # quadmesh = self.ax.imshow(z,cmap=cmap,vmin=vmin,vmax=vmax,aspect='auto',interpolation='none',origin='lower',extent=xy_range)
                 quadmesh = self.ax.imshow(z,cmap=cmap,vmin=vmin,vmax=vmax,aspect='auto',interpolation='none',origin='lower',extent=xy_range)
             else:
                 tri_checkboxes = [self.cb_tripcolor.checkState(),

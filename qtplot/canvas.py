@@ -279,6 +279,8 @@ class Canvas(scene.SceneCanvas):
                                            y_name)
         # Set the line endpoints in the shader program
         self.linecut_program['a_position'] = [self.mouse_start, self.mouse_end]
+        self.parent.l_slope.setText('{:+.3e}'.format(0)) 
+        self.parent.l_linepos.setText('%-10s:%+.3e'%(y_name,self.line_coord))
         
     def draw_vertical_linecut(self, x):
         self.line_type = 'vertical'
@@ -298,6 +300,8 @@ class Canvas(scene.SceneCanvas):
                                            x_name)
         # Set the line endpoints in the shader program
         self.linecut_program['a_position'] = [self.mouse_start, self.mouse_end]
+        self.parent.l_slope.setText('inf')
+        self.parent.l_linepos.setText('%-10s:%+.3e'%(x_name,self.line_coord))
         
     def draw_arbitrary_linecut(self, x, y, initial_press):
         self.line_type = 'diagonal'
@@ -333,12 +337,12 @@ class Canvas(scene.SceneCanvas):
                                                'Distance (-)',
                                                data_name, '[%s,%s]'%(x_name,y_name))
 
-            # Display slope and inverse slope in status bar
+            # Display info
             dx = x - x_start
             dy = y - y_start
-            if dx!=0 and dy!=0:
-                text = '({:+.3e}, {:+.3e})'.format(dy / dx, dx / dy)
-                self.parent.l_slope.setText(text)
+            text = '{:+.3e}'.format(dy / dx) if dx!=0 else ' '*7+'inf'
+            self.parent.l_slope.setText(text)
+            self.parent.l_linepos.setText('[%+.3e,%+.3e],[%+.3e,%+.3e]'%(x_start,y_start,x,y))
             # Set the line endpoints in the shader program
             self.linecut_program['a_position'] = [self.mouse_start, self.mouse_end]
 

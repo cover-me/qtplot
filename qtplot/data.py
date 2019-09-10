@@ -229,18 +229,17 @@ class Data2D:
         self.x_name, self.y_name, self.z_name = x_name, y_name, z_name
         self.filename, self.timestamp = filename, timestamp
         self.dat_file = dat_file
-
-        # This is not very pretty but I don't see another way.
-        # In order to have the datapoint matrices transposed the right way,
-        # information about which setpoint belong to which parameter is needed.
-        # We don't select this anymore, so we transpose the matrices such that
-        # the range of values on a row of the x-coordinate matrix is larger
-        # than for a column, which is a reasonable assumption.
-        # not necessary for plotting. but needed for filters and exporting
-        row_range = np.abs(np.nanmax(x, axis=0) - np.nanmin(x, axis=0))
-        col_range = np.abs(np.nanmax(x, axis=1) - np.nanmin(x, axis=1))
-
-        if np.average(row_range) > np.average(col_range):
+        
+        # In order to get [[x1,x2,..],[x1,x2,..],..] and [[y1,y1,..],[y2,y2,..],..] or slightly transformed + noisy coordinates
+        # Usually xa >> xb ~ 0, yb >> ya ~ 0
+        # Sub R plots: xa > xb, yb >> ya ~0 or xa >> xb ~ 0, yb > ya
+        # Above two means: xa>xb and yb>ya
+        # Sometimes (shifted scan) xa < xb, yb >> ya ~ 0 or xa >> xb ~ 0, yb < ya
+        xa = abs(x[0,0]-x[0,-1])
+        xb = abs(x[0,0]-x[-1,0])
+        ya = abs(y[0,0]-y[0,-1])
+        yb = abs(y[0,0]-y[-1,0])
+        if (xa<xb and yb<ya) or (xa>xb and yb<ya and yb/ya<xb/xa) or (xa<xb and yb>ya and ya/yb>xa/xb):
             x = x.T
             y = y.T
             z = z.T
