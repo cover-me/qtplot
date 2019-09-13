@@ -292,8 +292,10 @@ class ExportWidget(QtGui.QWidget):
             '<y>': self.main.y_name,
             '<z>': self.main.data_name,
             '<return>':'\n',
+            '<\\n>':'\n',
             '<gamma>':'(%s %s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text()),
-            '<winSize>':'(%s %s)'%(self.main.width(),self.main.height())
+            '<winSize>':'(%s %s)'%(self.main.width(),self.main.height()),
+            '<a3>':self.main.dat_file.a3_sp
         }
         for old, new in conversions.items():
             s = s.replace(old, new)
@@ -303,7 +305,7 @@ class ExportWidget(QtGui.QWidget):
             if isinstance(item, dict):
                 for key_, item_ in item.items():
                     s = s.replace('<%s:%s>'%(key,key_), '%s'%item_)
-        return s
+        return str(s).strip()
     
     def get_format_axis_names(self):
         xname = self.format_label(str(self.le_x_label.text()))

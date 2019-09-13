@@ -420,3 +420,7 @@ class Canvas(scene.SceneCanvas):
             self.linecut_program.draw('lines')
 
         self.has_redrawn = True
+    def clear(self):
+        self.data=None
+        gloo.clear()
+        self.update()

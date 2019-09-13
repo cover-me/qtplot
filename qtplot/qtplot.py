@@ -29,12 +29,14 @@ PROFILE_DEFAULTS = OrderedDict((
     ('x', ''),
     ('y', ''),
     ('z', ''),
+    ('a3', ''),
+    ('a3index', '0'),
     ('colormap', 'transform\\Seismic.npy'),
     ('min','-1'),
     ('max','1'),
     ('gamma','0'),
     ('auto_color',True),
-    ('title', '<filename> <operations>'),
+    ('title', '<a3><\\n><filename> <operations>'),
     ('DPI', '80,80,300'),
     ('rasterize', True),
     ('hold', False),
@@ -138,7 +140,7 @@ class QTPlot(QtGui.QMainWindow):
     def init_logging(self):
         formatter = logging.Formatter('%(levelname)s:%(name)s:%(message)s')
         root_logger = logging.getLogger()
-        root_logger.setLevel(logging.INFO)
+        root_logger.setLevel(logging.WARNING)
         if not os.path.exists(self.settings_dir):
             os.makedirs(self.settings_dir)
         log_file = os.path.join(self.settings_dir, 'log.txt')
@@ -204,42 +206,42 @@ class QTPlot(QtGui.QMainWindow):
 
         # Subtracting series R
         r_hbox = QtGui.QHBoxLayout()
-
-        lbl_sub = QtGui.QLabel('Sub R:')
-        lbl_sub.setMaximumWidth(70)
-        r_hbox.addWidget(lbl_sub)
-
-        lbl_v = QtGui.QLabel('V:')
-        lbl_v.setMaximumWidth(10)
+        
+        lbl_v = QtGui.QLabel('V-I-R:')
         r_hbox.addWidget(lbl_v)
 
         self.cb_v = QtGui.QComboBox(self)
         self.cb_v.setMaxVisibleItems(25)
         r_hbox.addWidget(self.cb_v)
 
-        lbl_i = QtGui.QLabel('I:')
-        lbl_i.setMaximumWidth(10)
-        r_hbox.addWidget(lbl_i)
-
         self.cb_i = QtGui.QComboBox(self)
         self.cb_i.setMaxVisibleItems(25)
         r_hbox.addWidget(self.cb_i)
 
-        lbl_r = QtGui.QLabel('R:')
-        lbl_r.setMaximumWidth(10)
-        r_hbox.addWidget(lbl_r)
-
         self.le_r = QtGui.QLineEdit(self)
-        self.le_r.setMaximumWidth(50)
-        self.le_r.setMinimumWidth(20)
         self.le_r.returnPressed.connect(self.on_sub_series_r)
         r_hbox.addWidget(self.le_r)
 
-        self.b_ok = QtGui.QPushButton('Ok', self)
-        self.b_ok.clicked.connect(self.on_sub_series_r)
-        self.b_ok.setMinimumWidth(22)
+        self.b_ok = QtGui.QPushButton('Sub', self)
+        self.b_ok.setToolTip('Subtract series R')
         self.b_ok.setMaximumWidth(50)
+        self.b_ok.clicked.connect(self.on_sub_series_r)
         r_hbox.addWidget(self.b_ok)
+        
+        lbl_a3 = QtGui.QLabel('Axis3:')
+        lbl_a3.setToolTip('The 3rd axis')
+        r_hbox.addWidget(lbl_a3)
+
+        self.cb_a3 = QtGui.QComboBox(self)
+        r_hbox.addWidget(self.cb_a3)
+        
+        self.le_a3index = QtGui.QLineEdit(self)
+        self.le_a3index.setText('0')
+        self.le_a3index.setMaximumWidth(20)
+        self.le_a3index.setValidator(QtGui.QIntValidator(0,0))
+        r_hbox.addWidget(self.le_a3index)
+
+ 
 
         # Selecting columns and orders
         grid = QtGui.QGridLayout()
@@ -270,7 +272,7 @@ class QTPlot(QtGui.QMainWindow):
         grid.addWidget(self.cb_z, 3, 2)
 
         self.combo_boxes = [self.cb_v, self.cb_i,
-                            self.cb_x, self.cb_y, self.cb_z]
+                            self.cb_x, self.cb_y, self.cb_z, self.cb_a3]
 
         # Colormap
         hbox_gamma1 = QtGui.QHBoxLayout()
@@ -428,7 +430,7 @@ class QTPlot(QtGui.QMainWindow):
         
     def update_ui(self, changeValue=False):
         """
-        repopulate combo_boxes ['sub_series_V', 'sub_series_I', 'x', 'y', 'z']
+        repopulate combo_boxes ['sub_series_V', 'sub_series_I', 'x', 'y', 'z', 'a3']
         if changeValue=True, restore profile values to combo_boxes, R, cmap, gamma...
         """
         if self.name is not None:
@@ -438,14 +440,17 @@ class QTPlot(QtGui.QMainWindow):
             for cb in self.combo_boxes:
                 i = cb.currentIndex()
                 cb.clear()
-                cb.addItems(parameters)
-                cb.setCurrentIndex(i)      
+                if cb is self.cb_a3:
+                    cb.addItems(parameters[:4])
+                else:
+                    cb.addItems(parameters)
+                cb.setCurrentIndex(i)
                     
             if changeValue:
                 # set R
                 self.le_r.setText(self.profile_settings['sub_series_R'])
-                # set ['sub_series_V', 'sub_series_I', 'x', 'y', 'z']
-                names = ['sub_series_V', 'sub_series_I', 'x', 'y', 'z']
+                # set ['sub_series_V', 'sub_series_I', 'x', 'y', 'z', 'a3']
+                names = ['sub_series_V', 'sub_series_I', 'x', 'y', 'z', 'a3']
                 for i, cb in enumerate(self.combo_boxes):
                     parameter = self.profile_settings[names[i]]
                     index = cb.findText(parameter)
@@ -466,6 +471,7 @@ class QTPlot(QtGui.QMainWindow):
                     self.cb_reset_cmap.setCheckState(QtCore.Qt.Unchecked)#self.profile_settings['auto_color']*2) or use self.cb_rasterize.setChecked
                     self.le_min.setText(self.profile_settings['min'])
                     self.le_max.setText(self.profile_settings['max'])
+                    self.le_a3index.setText(self.profile_settings['a3index'])
                     self.on_min_max_entered(update_canvas=False)#min max edit line entered
                     self.on_gamma_changed(float(self.profile_settings['gamma']),update_canvas=False)#gamma slider changed
                 except Exception as e:
@@ -473,21 +479,13 @@ class QTPlot(QtGui.QMainWindow):
                     
             if self.is_first_data_file:
                 self.cb_reset_cmap.setChecked(self.profile_settings['auto_color'])
-                default_indices = [0, 0, 1, 2, 4]#['sub_series_V', 'sub_series_I', 'x', 'y', 'z']
+                default_indices = [0, 0, 1, 2, 4, 0]#['sub_series_V', 'sub_series_I', 'x', 'y', 'z', 'a3']
                 for cb, i in zip(self.combo_boxes, default_indices):
                     cb.setCurrentIndex(i)
-                self.is_first_data_file = False
-                
-            # If the dataset is 1D; disable the y-parameter combobox
-            if self.dat_file is not None:
-                if self.dat_file.ndim == 1:
-                    self.cb_y.setCurrentIndex(0)
-                    self.cb_y.setEnabled(False)
-                else:
-                    self.cb_y.setEnabled(True)     
+                self.is_first_data_file = False   
             
         else:
-            logger.warning('update_ui: file name is None, nothing updated')
+            logger.info('update_ui: file name is None, nothing updated')
 
     def load_dat_file(self, filename):
         """
@@ -600,7 +598,7 @@ class QTPlot(QtGui.QMainWindow):
         if os.path.exists(operations_file):
             self.operations.load(operations_file)
         else:
-            logger.warning('No operations file present for selected profile')
+            logger.info('No operations file present for selected profile.')
         self.profile_ini.read(self.profile_ini_file)
         
         # Update profile_settings with profile_ini
@@ -617,7 +615,7 @@ class QTPlot(QtGui.QMainWindow):
                               self.profile_settings['sub_series_I'],
                               R)
         except ValueError:
-            logger.warning('Could not parse resistance value in the profile')
+            logger.info('R is not given.')
 
         self.update_ui(changeValue)
         self.on_cmap_change(update_canvas=False)# should only update the canvas once
@@ -632,7 +630,18 @@ class QTPlot(QtGui.QMainWindow):
             self.export_widget.on_update()
 
     def get_parameter_names(self):
-       return self.dat_file.ids
+        return self.dat_file.ids
+    
+    def get_a3(self):
+        a3 = self.cb_a3.currentIndex()-1
+        if a3 not in range(3):
+            self.le_a3index.setText('0')
+            a3 = 2
+            a3index = 0
+        else:
+            a3index = int(self.le_a3index.text())
+        a3index_max = self.dat_file.shape[a3]-1
+        return a3,a3index,a3index_max
 
 
     def on_data_change(self):
@@ -641,13 +650,34 @@ class QTPlot(QtGui.QMainWindow):
         consist of a new data file being loaded, a change in parameter to plot,
         or a change/addition of an Operation.
 
-        A clean version of the Data2D is retrieved from the DatFile or DataSet,
+        A clean version of the Data2D is retrieved from the DatFile,
         all the operations are applied to the data, and it is plotted.
         """
+        self.canvas.clear()
         # Get the selected axes from the interface
+        if self.filename is None or not os.path.isfile(self.filename):
+            return
         x_name, y_name, data_name = self.get_axis_names()
         # Update the Data2D
-        self.data = self.dat_file.get_data(x_name, y_name, data_name) # return Data2D object
+        a3,a3index,a3index_max = self.get_a3()
+        if a3index > a3index_max:
+            a3index = a3index_max
+            self.le_a3index.setText('%s'%a3index_max)
+        self.le_a3index.setValidator(QtGui.QIntValidator(0,a3index_max))
+        # If the dataset is 1D; disable the y-parameter combobox
+        if self.dat_file.get_dim() == 0:
+            self.cb_x.setCurrentIndex(0)
+            self.cb_x.setEnabled(False)
+            self.cb_y.setCurrentIndex(0)
+            self.cb_y.setEnabled(False)
+        elif self.dat_file.get_dim() == 1:
+            self.cb_x.setEnabled(True)
+            self.cb_y.setCurrentIndex(0)
+            self.cb_y.setEnabled(False)
+        else:
+            self.cb_x.setEnabled(True)
+            self.cb_y.setEnabled(True)
+        self.data = self.dat_file.get_data(x_name,y_name,data_name,a3,a3index) # return Data2D object
         if self.data is None:
             return
 
