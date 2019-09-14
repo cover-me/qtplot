@@ -109,6 +109,10 @@ class DatFile:
                 self.shape += [1]*(3-len(self.shape))
 
             self.ndim = sum(d > 1 for d in self.shape)
+            if self.shape[2]>1:
+                self.main.cb_a3.setStyleSheet("background-color:#cfc;")
+            else:
+                self.main.cb_a3.setStyleSheet("background-color:#eee;")      
 
     def load_qtlab_settings(self):
         path, ext = os.path.splitext(self.filename)
@@ -198,8 +202,7 @@ class DatFile:
         pivot[2,:n_dp] = z_data
         pivot[3,:n_dp] = row_numbers
         pivot = pivot.reshape([4]+self.shape[::-1])
-        
-        
+
         if a3 == 0:#x_ind=const
             x,y,z,row_numbers = pivot[:,:,:,a3index]
         elif a3 == 1:#y_ind=const
@@ -208,9 +211,12 @@ class DatFile:
             x,y,z,row_numbers = pivot[:,a3index,:,:]
         else:
             return None
+
         a3_name = self.ids[a3].split('_')[-1][1:-1]
         if a3_name:
             self.a3_sp = '%s: %s'%(a3_name,self.data[row_numbers[0,0],a3])
+        else:
+            self.a3_sp = ''
         
         nans = np.isnan(row_numbers[:,0])
         x = x[~nans]
@@ -311,7 +317,7 @@ class Data2D:
         
     def save(self, filename):
         """
-        Save the 2D data to a file.
+        Save the 2D data to a file. The original data can be upto 3D.
 
         format (str): .npy / .mat / .dat
         """
@@ -340,8 +346,8 @@ class Data2D:
                 ymin = self.y[0,0]
                 ymax = self.y[-1,0]
                 ny, nx = np.shape(self.y)
-                f.write('Units, %s,%s, %s, %s,%s, %s, %s,None(qtplot), 0, 1\n'%(zlabel.replace(',','_'),xlabel.replace(',','_'),xmin,xmax,ylabel.replace(',','_'),ymin,ymax))
-                f.write('%d %d 1 %d\n'%(nx,ny,self.z.dtype.itemsize))
+                f.write('Units, %s,%s, %s, %s,%s, %s, %s,None(qtplot), 0, 1\n'%(zlabel.replace(',','_'),xlabel.replace(',','_'),xmin,xmax,ylabel.replace(',','_'),ymin,ymax))#data_label,x_label,xmin,xmax,ylabel,ymin,ymax
+                f.write('%d %d 1 %d\n'%(nx,ny,self.z.dtype.itemsize))#dimensions nx,ny,nz=1,data_element_size
                 self.z.T.ravel().tofile(f)
 
     def set_data(self, x, y, z):
@@ -895,7 +901,7 @@ class Data2D:
         self.z = (self.z*Amp-Rin)/R2
     
     def G_in_G2(self, a_I, a_V, Rin):
-        """z = z*Amp/(1-(z*Amp*Rin))/7.74809e-5, Amp = a_I/a_V"""
+        """z = z*Amp/(1-(z*Amp*Rin))/7.74809e-5. z*Amp: conductance. Amp: a_I/a_V"""
         G2 = 7.74809e-5#ohm^-1, 2e^2/h
         Amp = a_I/a_V
         self.z = self.z*Amp
@@ -909,3 +915,19 @@ class Data2D:
             y1 = 0 if math.isnan(ymin) else np.searchsorted(self.y[:,0],ymin)
             y2 = -1 if math.isnan(ymax) else np.searchsorted(self.y[:,0],ymax,'right')-1
             self.crop(x1,x2,y1,y2)
+            
+    def reverse_odd_rows(self,shift=0):
+        """Reverse and shift odd rows. For a meander scan. [1::2, :]->[1::2, ::-1]"""
+        self.x[1::2, :] = self.x[1::2, ::-1]
+        if shift>0:
+            self.z[1::2, :shift] = np.nan
+            self.z[1::2, shift:] = self.z[1::2, :shift-1:-1]
+        elif shift<0:
+            self.z[1::2, shift:] = np.nan
+            self.z[1::2, :shift] = self.z[1::2, shift-1::-1]
+        else:
+            self.z[1::2, :] = self.z[1::2, ::-1]
+            
+            
+        
+        

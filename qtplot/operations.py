@@ -184,7 +184,8 @@ class Operations(QtGui.QDialog):
                                                    '2nd order central diff'])]],
             'r_in_R2': [Data2D.R_in_R2, [('a_I',1e-7),('a_V',1e-3),('Rin',4100)]],
             'g_in_G2': [Data2D.G_in_G2, [('a_I',1e-6),('a_V',1e-5),('Rin',4100)]],
-            'xy_limit' : [Data2D.xy_limit, [('xmin',float('nan')),('xmax',float('nan')),('ymin',float('nan')),('ymax',float('nan'))]]
+            'xy_limit' : [Data2D.xy_limit, [('xmin',float('nan')),('xmax',float('nan')),('ymin',float('nan')),('ymax',float('nan'))]],
+            'reverse_odd_rows' : [Data2D.reverse_odd_rows, [('shift',0)]],
         }
 
         self.options = QtGui.QListWidget(self)

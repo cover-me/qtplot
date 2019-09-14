@@ -184,7 +184,7 @@ class QTPlot(QtGui.QMainWindow):
         # Top row buttons
         hbox2 = QtGui.QHBoxLayout()
         
-        self.b_load = QtGui.QPushButton('Load')
+        self.b_load = QtGui.QPushButton('Load..')
         self.b_load.clicked.connect(self.on_load_dat)
         hbox.addWidget(self.b_load)
 
@@ -192,7 +192,7 @@ class QTPlot(QtGui.QMainWindow):
         self.b_refresh.clicked.connect(self.on_refresh)
         hbox.addWidget(self.b_refresh)
         
-        self.b_swap_axes = QtGui.QPushButton('Swap axes', self)
+        self.b_swap_axes = QtGui.QPushButton('Swap XY', self)
         self.b_swap_axes.clicked.connect(self.on_swap_axes)
         hbox2.addWidget(self.b_swap_axes)
 
@@ -212,33 +212,42 @@ class QTPlot(QtGui.QMainWindow):
 
         self.cb_v = QtGui.QComboBox(self)
         self.cb_v.setMaxVisibleItems(25)
+        self.cb_v.setMinimumContentsLength(3)
+        self.cb_v.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Fixed))
         r_hbox.addWidget(self.cb_v)
 
         self.cb_i = QtGui.QComboBox(self)
         self.cb_i.setMaxVisibleItems(25)
+        self.cb_i.setMinimumContentsLength(3)
+        self.cb_i.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Fixed))
         r_hbox.addWidget(self.cb_i)
 
         self.le_r = QtGui.QLineEdit(self)
         self.le_r.returnPressed.connect(self.on_sub_series_r)
+        self.le_r.setMaximumWidth(30)
         r_hbox.addWidget(self.le_r)
 
         self.b_ok = QtGui.QPushButton('Sub', self)
         self.b_ok.setToolTip('Subtract series R')
-        self.b_ok.setMaximumWidth(50)
+        self.b_ok.setMaximumWidth(30)
         self.b_ok.clicked.connect(self.on_sub_series_r)
         r_hbox.addWidget(self.b_ok)
         
-        lbl_a3 = QtGui.QLabel('Axis3:')
-        lbl_a3.setToolTip('The 3rd axis')
+        lbl_a3 = QtGui.QLabel('A3:')
         r_hbox.addWidget(lbl_a3)
 
         self.cb_a3 = QtGui.QComboBox(self)
+        self.cb_a3.setToolTip('The 3rd axis')
+        self.cb_a3.setMinimumContentsLength(3)
+        # self.cb_a3.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Fixed))
         r_hbox.addWidget(self.cb_a3)
         
         self.le_a3index = QtGui.QLineEdit(self)
         self.le_a3index.setText('0')
-        self.le_a3index.setMaximumWidth(20)
+        self.le_a3index.setToolTip('Index')
+        self.le_a3index.setMaximumWidth(15)
         self.le_a3index.setValidator(QtGui.QIntValidator(0,0))
+        self.le_a3index.returnPressed.connect(self.on_refresh)
         r_hbox.addWidget(self.le_a3index)
 
  
@@ -288,7 +297,6 @@ class QTPlot(QtGui.QMainWindow):
         self.cb_cmaps = QtGui.QComboBox(self)
         self.cb_cmaps.setMinimumContentsLength(5)
         self.cb_cmaps.activated.connect(self.on_cmap_change)
-
         path = os.path.dirname(os.path.realpath(__file__))
 
         path = os.path.join(path, 'colormaps')
@@ -374,8 +382,8 @@ class QTPlot(QtGui.QMainWindow):
 
         # Main box
         vbox = QtGui.QVBoxLayout(self.view_widget)
+        vbox.addWidget(self.canvas.native)
         vbox2 = QtGui.QVBoxLayout()   
-        vbox2.addWidget(self.canvas.native)
         vbox2.addLayout(hbox)
         vbox2.addLayout(hbox2)
         vbox2.addLayout(r_hbox)
@@ -387,7 +395,7 @@ class QTPlot(QtGui.QMainWindow):
         s_widget.setLayout(vbox2)
         s_area = QtGui.QScrollArea()
         s_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        #s_area.setFixedHeight(s_widget.sizeHint().height())
+        s_area.setFixedHeight(s_widget.sizeHint().height())
         s_area.setFrameStyle(QtGui.QScrollArea.NoFrame)
         s_area.setWidgetResizable(True)
         s_area.setWidget(s_widget)
@@ -431,7 +439,7 @@ class QTPlot(QtGui.QMainWindow):
     def update_ui(self, changeValue=False):
         """
         repopulate combo_boxes ['sub_series_V', 'sub_series_I', 'x', 'y', 'z', 'a3']
-        if changeValue=True, restore profile values to combo_boxes, R, cmap, gamma...
+        if changeValue=True, restore profile values to combo_boxes, R, cmap, gamma, a3index...
         """
         if self.name is not None:
             self.setWindowTitle(self.name)
