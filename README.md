@@ -13,7 +13,7 @@ This is a project forked from [Rubenknex/qtplot](https://github.com/Rubenknex/qt
 * Other features: Improve the "incremental" mode for better hystersis diagrams with multiple lines; Add filters that subtract Rin and normalize G/R to quantuam conductance/resistance respectively; Show multiple 2D graphs on a signle canvas. Optimize the GUI.
 * ...
 
-This [video](https://cover-me.github.io/images/qtplot_with_qtlab.mp4) demos how it plots real-time data with [qtlab](https://github.com/heeres/qtlab).
+This [video](https://cover-me.github.io/images/qtplot_with_qtlab.mp4) demos how it plots real-time data with [qtlab](https://github.com/heeres/qtlab). The GUI may be out of date.
 
 This [video](https://cover-me.github.io/images/qtplot_plot_replot.mp4) shows how to plot data and reproduce the figure.
 
