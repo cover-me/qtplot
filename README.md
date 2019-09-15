@@ -3,12 +3,13 @@ This screenshot is from forked project. Newer screenshots are available at the e
 
 ## Introduction
 
-This is a project forked from Rubenknex/qtplot. The original one is already a very powerful program to plot 1d and 2d data. I did a little modification: 
+This is a project forked from [Rubenknex/qtplot](https://github.com/Rubenknex/qtplot). It is a very useful program to visualize 1d and 2d data. I added some features in this forked project: 
 
-* Add a tcp server that can be talked by external programs, making it possible to show real-time diagrams automatically.
-* Add some features that the plotting program Spyview has: left and right hot keys to toggle between data files; Show filter information on the diagrams.
-* Auto save drawing parameters when exported to PPT. Drag and drop .ini files for reproducing figures.
-* A place to run python commands directly.
+* A tcp server that talks with external programs, making it possible to show real-time diagrams programmatically.
+* Some features from [Spyview](http://nsweb.tn.tudelft.nl/~gsteele/spyview/): left and right hot keys to toggle between data files; Show filter information on diagrams.
+* Save plotting parameters when exported to PPT. Drag and drop .ini files to reproduce figures (colorbar, size, font, ...).
+* A button to run python commands.
+* Import 3D scanned data and show 2D slice by choosing the 3rd axis and the index to slice.
 * Other features: Improve the "incremental" mode for better hystersis diagrams with multiple lines; Add filters that subtract Rin and normalize G/R to quantuam conductance/resistance respectively; Show multiple 2D graphs on a signle canvas. Optimize the GUI.
 * ...
 
