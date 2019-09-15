@@ -339,7 +339,11 @@ class ExportWidget(QtGui.QWidget):
                     self.main.linecut.fig.set_dpi(new_dpi)
                     self.main.linecut.resize(self.main.linecut.width(),self.main.linecut.height()+1)
                     self.main.linecut.resize(self.main.linecut.width(),self.main.linecut.height()-1)
-            self.filenames.append(os.path.splitext(self.format_label('<filename>'))[0])
+            new_filename = os.path.splitext(self.format_label('<filename>'))[0].split('_')[-1]
+            if new_filename.endswith('temp.npy') or new_filename in self.filenames:
+                pass
+            else:
+                self.filenames.append(new_filename)
             
             # Get the data and colormap
             x, y, z = self.main.data.get_pcolor()
@@ -390,7 +394,7 @@ class ExportWidget(QtGui.QWidget):
             ftnm = str(self.le_font.text())
             w,h = self.fig.get_size_inches()
             title = self.format_label(str(self.le_title.text()))
-            title += '' if len(self.filenames)<2 or title=='' else  (' & ' + ' '.join(self.filenames[:-1]))
+            title += '' if len(self.filenames)<2 or title=='' else  (' [%s]'%(' '.join(self.filenames)))
             title = '\n'.join(textwrap.wrap(title,int(80.*w/ftsz), replace_whitespace=False))
             self.ax.set_title(title,fontname=ftnm)
             self.ax.set_xlabel(self.format_label(self.le_x_label.text()),fontname=ftnm)
