@@ -201,7 +201,7 @@ class DatFile:
         pivot[1,:n_dp] = y_data
         pivot[2,:n_dp] = z_data
         pivot[3,:n_dp] = row_numbers
-        pivot = pivot.reshape([4]+self.shape[::-1])
+        pivot = pivot.reshape([4,n_pg]+self.shape[1::-1])
 
         if a3 == 0:#x_ind=const
             x,y,z,row_numbers = pivot[:,:,:,a3index]

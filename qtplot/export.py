@@ -340,7 +340,7 @@ class ExportWidget(QtGui.QWidget):
                     self.main.linecut.resize(self.main.linecut.width(),self.main.linecut.height()+1)
                     self.main.linecut.resize(self.main.linecut.width(),self.main.linecut.height()-1)
             new_filename = os.path.splitext(self.format_label('<filename>'))[0].split('_')[-1]
-            if new_filename.endswith('temp.npy') or new_filename in self.filenames:
+            if new_filename=='temp' or new_filename in self.filenames:
                 pass
             else:
                 self.filenames.append(new_filename)
