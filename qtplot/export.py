@@ -87,7 +87,7 @@ class ExportWidget(QtGui.QWidget):
 
         grid_general.addWidget(QtGui.QLabel('Rasterize'), 1, 5)
         self.cb_rasterize = QtGui.QCheckBox('')
-        self.cb_rasterize.setToolTip('Unchecked: use imshow()\nChecked: use pcolormesh(rasterized=True)')
+        self.cb_rasterize.setToolTip('Unchecked: use imshow(), there may be white spaces near axes but exported images are fine.\nChecked: use pcolormesh(rasterized=True)')
         grid_general.addWidget(self.cb_rasterize, 1, 6)
 
         grid_general.addWidget(QtGui.QLabel('Hold'), 1, 7)
@@ -292,8 +292,10 @@ class ExportWidget(QtGui.QWidget):
             '<y>': self.main.y_name,
             '<z>': self.main.data_name,
             '<return>':'\n',
+            '<\\n>':'\n',
             '<gamma>':'(%s %s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text()),
-            '<winSize>':'(%s %s)'%(self.main.width(),self.main.height())
+            '<winSize>':'(%s %s)'%(self.main.width(),self.main.height()),
+            '<a3>':self.main.dat_file.a3_sp
         }
         for old, new in conversions.items():
             s = s.replace(old, new)
@@ -303,7 +305,7 @@ class ExportWidget(QtGui.QWidget):
             if isinstance(item, dict):
                 for key_, item_ in item.items():
                     s = s.replace('<%s:%s>'%(key,key_), '%s'%item_)
-        return s
+        return str(s).strip()
     
     def get_format_axis_names(self):
         xname = self.format_label(str(self.le_x_label.text()))
@@ -337,7 +339,11 @@ class ExportWidget(QtGui.QWidget):
                     self.main.linecut.fig.set_dpi(new_dpi)
                     self.main.linecut.resize(self.main.linecut.width(),self.main.linecut.height()+1)
                     self.main.linecut.resize(self.main.linecut.width(),self.main.linecut.height()-1)
-            self.filenames.append(os.path.splitext(self.format_label('<filename>'))[0])
+            new_filename = os.path.splitext(self.format_label('<filename>'))[0].split('_')[-1]
+            if new_filename=='temp' or new_filename in self.filenames:
+                pass
+            else:
+                self.filenames.append(new_filename)
             
             # Get the data and colormap
             x, y, z = self.main.data.get_pcolor()
@@ -348,6 +354,7 @@ class ExportWidget(QtGui.QWidget):
             if self.cb_rasterize.checkState()!= QtCore.Qt.Checked:
                 xy_range = (x[0,0],x[0,-1],y[0,0],y[-1,0])
                 #though it can no longer be called as quadmesh.., there may be white spaces near axes but exported files looks fine.
+                # quadmesh = self.ax.imshow(z,cmap=cmap,vmin=vmin,vmax=vmax,aspect='auto',interpolation='none',origin='lower',extent=xy_range)
                 quadmesh = self.ax.imshow(z,cmap=cmap,vmin=vmin,vmax=vmax,aspect='auto',interpolation='none',origin='lower',extent=xy_range)
             else:
                 tri_checkboxes = [self.cb_tripcolor.checkState(),
@@ -387,7 +394,7 @@ class ExportWidget(QtGui.QWidget):
             ftnm = str(self.le_font.text())
             w,h = self.fig.get_size_inches()
             title = self.format_label(str(self.le_title.text()))
-            title += '' if len(self.filenames)<2 or title=='' else  (' & ' + ' '.join(self.filenames[:-1]))
+            title += '' if len(self.filenames)<2 or title=='' else  (' [%s]'%(' '.join(self.filenames)))
             title = '\n'.join(textwrap.wrap(title,int(80.*w/ftsz), replace_whitespace=False))
             self.ax.set_title(title,fontname=ftnm)
             self.ax.set_xlabel(self.format_label(self.le_x_label.text()),fontname=ftnm)

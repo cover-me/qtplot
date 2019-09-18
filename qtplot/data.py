@@ -27,6 +27,7 @@ class DatFile:
         self.qtlab_settings = OrderedDict()
         self.data = None
         self.main = main
+        self.a3_sp = ''#setpoint of axis 3, the axis perpendicular to screen
     
     def update_file(self, filename):
         if self.filename != filename:
@@ -36,7 +37,7 @@ class DatFile:
             self.__init__(self.main)
             self.filename = filename
             self.load_qtlab_settings()# load .set file
-            self.load_metadata()# load metadata
+            self.load_metadata()# load metadata, for .mtx files, data are loaded at this step
             self.load_data()# load data
             return True#new file
         else:
@@ -108,6 +109,10 @@ class DatFile:
                 self.shape += [1]*(3-len(self.shape))
 
             self.ndim = sum(d > 1 for d in self.shape)
+            if self.shape[2]>1:
+                self.main.cb_a3.setStyleSheet("background-color:#cfc;")
+            else:
+                self.main.cb_a3.setStyleSheet("background-color:#eee;")      
 
     def load_qtlab_settings(self):
         path, ext = os.path.splitext(self.filename)
@@ -136,11 +141,13 @@ class DatFile:
                     new = [(param, value)]
                     self.qtlab_settings[current_instrument].update(new)
         else:
-            logger.warning('Could not find settings file %s' % os.path.split(settings_file)[1])
+            logger.info('Could not find settings file %s' % os.path.split(settings_file)[1])
 
     def get_column(self, name):
         if name in self.ids:
             return self.data[:, self.ids.index(name)]
+        else:
+            return None
 
     def set_column(self, name, values):
         if name in self.ids:
@@ -153,41 +160,69 @@ class DatFile:
     def get_row_info(self, row):
         # Return a dict of all parameter-value pairs in the row
         return OrderedDict(zip(self.ids, self.data[row]))
+    
+    def get_dim(self):
+        a3,_,__ = self.main.get_a3()
+        dim_a3 = 0 if self.shape[a3]<2 else 1
+        return self.ndim-dim_a3
 
-    def get_data(self, x_name, y_name, z_name):
+    def get_data(self, x_name, y_name, z_name, a3, a3index):
         if self.data is None:
+            return None
+        if self.get_dim()==0:
+            logger.error('0 dimensional data!')
             return None
         if x_name == '':
             logger.error('You have to select a parameter for the x-axis')
             return None
-        if y_name != '' and self.ndim < 2:
+        if a3index > self.shape[a3]-1:
+            logger.error('axis3 index out of range.')
+            return None
+        if y_name != '' and self.get_dim()==1:
             logger.warning('Ignoring the y-axis parameter since it is a 1D dataset')
             y_name = ''
-        if self.ndim == 0:
-            logger.error('No setpoint columns with a size property were found')
-            return None
-        if self.ndim > 2:
-            logger.error('Do not support data > 2D')
-            return None
-        dp_numbers = self.data.shape[0]
-        row_numbers = np.arange(dp_numbers)
+        
+        n_per_line = self.shape[0]#number per line
+        n_per_page = self.shape[0]*self.shape[1]#number per page
+        n_dp = self.data.shape[0]#number of datapoints
+        n_pg = np.ceil(float(n_dp)/n_per_page)#number of pages
+        
+        
+        pivot = np.empty((4,n_per_page*n_pg))*np.nan#pad with na.nan
+
+        row_numbers = np.arange(n_dp)#n_dp also == len(x_data)
         x_data = self.get_column(x_name)
-        y_data = np.zeros(dp_numbers)
+        y_data = self.get_column(y_name)
         z_data = self.get_column(z_name)
+        if y_data is None:
+            y_data = np.zeros(n_dp)
 
-        # Retrieve y data if present
-        if self.ndim > 1 and y_name != '':
-            y_data = self.get_column(y_name)
+        pivot[0,:n_dp] = x_data
+        pivot[1,:n_dp] = y_data
+        pivot[2,:n_dp] = z_data
+        pivot[3,:n_dp] = row_numbers
+        pivot = pivot.reshape([4,n_pg]+self.shape[1::-1])
 
-        pivot = np.empty((np.ceil(float(dp_numbers)/self.shape[0])*self.shape[0],4))*np.nan
-        pivot[:dp_numbers,0] = x_data
-        pivot[:dp_numbers,1] = y_data
-        pivot[:dp_numbers,2] = z_data
-        pivot[:dp_numbers,3] = row_numbers
-        x = pivot[:,0].reshape((-1,self.shape[0]))
-        y = pivot[:,1].reshape((-1,self.shape[0]))
-        z = pivot[:,2].reshape((-1,self.shape[0]))
-        row_numbers = pivot[:,3].reshape((-1,self.shape[0]))
+        if a3 == 0:#x_ind=const
+            x,y,z,row_numbers = pivot[:,:,:,a3index]
+        elif a3 == 1:#y_ind=const
+            x,y,z,row_numbers = pivot[:,:,a3index,:]
+        elif a3 == 2 or a3==-1:#z_ind=const
+            x,y,z,row_numbers = pivot[:,a3index,:,:]
+        else:
+            return None
+
+        a3_name = self.ids[a3].split('_')[-1][1:-1]
+        if a3_name:
+            self.a3_sp = '%s: %s'%(a3_name,self.data[row_numbers[0,0],a3])
+        else:
+            self.a3_sp = ''
+        
+        nans = np.isnan(row_numbers[:,0])
+        x = x[~nans]
+        y = y[~nans]
+        z = z[~nans]
+        row_numbers = row_numbers[~nans]
 
         return Data2D(x, y, z, row_numbers, x_name, y_name, z_name, self.filename, self.timestamp, self)
 
@@ -229,18 +264,17 @@ class Data2D:
         self.x_name, self.y_name, self.z_name = x_name, y_name, z_name
         self.filename, self.timestamp = filename, timestamp
         self.dat_file = dat_file
-
-        # This is not very pretty but I don't see another way.
-        # In order to have the datapoint matrices transposed the right way,
-        # information about which setpoint belong to which parameter is needed.
-        # We don't select this anymore, so we transpose the matrices such that
-        # the range of values on a row of the x-coordinate matrix is larger
-        # than for a column, which is a reasonable assumption.
-        # not necessary for plotting. but needed for filters and exporting
-        row_range = np.abs(np.nanmax(x, axis=0) - np.nanmin(x, axis=0))
-        col_range = np.abs(np.nanmax(x, axis=1) - np.nanmin(x, axis=1))
-
-        if np.average(row_range) > np.average(col_range):
+        # Be careful of Nan.
+        # In order to get [[x1,x2,..],[x1,x2,..],..] and [[y1,y1,..],[y2,y2,..],..] or slightly transformed + noisy coordinates
+        # Usually xa >> xb ~ 0, yb >> ya ~ 0
+        # Sub R plots: xa > xb, yb >> ya ~0 or xa >> xb ~ 0, yb > ya
+        # Above two means: xa>xb and yb>ya
+        # Sometimes (shifted scan) xa < xb, yb >> ya ~ 0 or xa >> xb ~ 0, yb < ya
+        xa = abs(x[0,0]-x[0,-1])
+        xb = abs(x[0,0]-x[-1,0])
+        ya = abs(y[0,0]-y[0,-1])
+        yb = abs(y[0,0]-y[-1,0])
+        if (xa<xb and yb<ya) or (xa>xb and yb<ya and yb/ya<xb/xa) or (xa<xb and yb>ya and ya/yb>xa/xb):
             x = x.T
             y = y.T
             z = z.T
@@ -283,7 +317,7 @@ class Data2D:
         
     def save(self, filename):
         """
-        Save the 2D data to a file.
+        Save the 2D data to a file. The original data can be upto 3D.
 
         format (str): .npy / .mat / .dat
         """
@@ -312,8 +346,8 @@ class Data2D:
                 ymin = self.y[0,0]
                 ymax = self.y[-1,0]
                 ny, nx = np.shape(self.y)
-                f.write('Units, %s,%s, %s, %s,%s, %s, %s,None(qtplot), 0, 1\n'%(zlabel.replace(',','_'),xlabel.replace(',','_'),xmin,xmax,ylabel.replace(',','_'),ymin,ymax))
-                f.write('%d %d 1 %d\n'%(nx,ny,self.z.dtype.itemsize))
+                f.write('Units, %s,%s, %s, %s,%s, %s, %s,None(qtplot), 0, 1\n'%(zlabel.replace(',','_'),xlabel.replace(',','_'),xmin,xmax,ylabel.replace(',','_'),ymin,ymax))#data_label,x_label,xmin,xmax,ylabel,ymin,ymax
+                f.write('%d %d 1 %d\n'%(nx,ny,self.z.dtype.itemsize))#dimensions nx,ny,nz=1,data_element_size
                 self.z.T.ravel().tofile(f)
 
     def set_data(self, x, y, z):
@@ -867,7 +901,7 @@ class Data2D:
         self.z = (self.z*Amp-Rin)/R2
     
     def G_in_G2(self, a_I, a_V, Rin):
-        """z = z*Amp/(1-(z*Amp*Rin))/7.74809e-5, Amp = a_I/a_V"""
+        """z = z*Amp/(1-(z*Amp*Rin))/7.74809e-5. z*Amp: conductance. Amp: a_I/a_V"""
         G2 = 7.74809e-5#ohm^-1, 2e^2/h
         Amp = a_I/a_V
         self.z = self.z*Amp
@@ -881,3 +915,19 @@ class Data2D:
             y1 = 0 if math.isnan(ymin) else np.searchsorted(self.y[:,0],ymin)
             y2 = -1 if math.isnan(ymax) else np.searchsorted(self.y[:,0],ymax,'right')-1
             self.crop(x1,x2,y1,y2)
+            
+    def reverse_odd_rows(self,shift=0):
+        """Reverse and shift odd rows. For a meander scan. [1::2, :]->[1::2, ::-1]"""
+        self.x[1::2, :] = self.x[1::2, ::-1]
+        if shift>0:
+            self.z[1::2, :shift] = np.nan
+            self.z[1::2, shift:] = self.z[1::2, :shift-1:-1]
+        elif shift<0:
+            self.z[1::2, shift:] = np.nan
+            self.z[1::2, :shift] = self.z[1::2, shift-1::-1]
+        else:
+            self.z[1::2, :] = self.z[1::2, ::-1]
+            
+            
+        
+        
