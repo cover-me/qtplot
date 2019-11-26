@@ -1,11 +1,11 @@
 ![alt tag](screenshot.png)
-This screenshot is from forked project. Newer screenshots are available at the end of this file.
+This screenshot is taken from the forked project. Newer screenshots are available at the end of this document.
 
 ## Introduction
 
-This is a project forked from [Rubenknex/qtplot](https://github.com/Rubenknex/qtplot). It is a very useful program to visualize 1d and 2d data. I added some features in this forked project: 
+This is a project forked from [Rubenknex/qtplot](https://github.com/Rubenknex/qtplot). It is a very useful program to visualize 1d and 2d data. I added some new features: 
 
-* A tcp server that talks with external programs, making it possible to show real-time diagrams programmatically.
+* A tcp server who talks with external programs, making it possible to show real-time diagrams programmatically.
 * Some features from [Spyview](http://nsweb.tn.tudelft.nl/~gsteele/spyview/): left and right hot keys to toggle between data files; Show filter information on diagrams.
 * Save plotting parameters when exported to PPT. Drag and drop .ini files to reproduce figures (colorbar, size, font, ...).
 * A button to run python commands.
@@ -20,7 +20,7 @@ This [video](https://cover-me.github.io/images/qtplot_plot_replot.mp4) shows how
 
 
 ## Installation
-After installing, please delete old profiles by clicking Settings->Remove and restart the program again if you have versions older than 2018.12.03 in use.
+After installing, please delete old profiles by clicking Settings->Remove and restart the program again if you are using versions older than 2018.12.03.
 
 ### Install qtplot with Anaconda Python
 Qtplot is compatible with both Python 2 and 3. Using the Anaconda Python distribution (https://www.continuum.io/downloads) is recommended to make installing packages like `numpy` and `scipy` easier.
