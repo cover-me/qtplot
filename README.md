@@ -17,7 +17,7 @@ This [video](https://cover-me.github.io/images/qtplot_with_qtlab.mp4) demos how 
 
 This [video](https://cover-me.github.io/images/qtplot_plot_replot.mp4) shows how to plot data and reproduce the figure.
 
-
+While qtplot is convenient for measurements, it has limitations for the publication purpose. For example, qtplot can't produce figures with multiple sub-panels. The freedom of modifying the colorbar and ticks is low. A Jupyter Notebook with pieces of code stolen from qtplot would make customizing of figures easily. Here is an example [qtploter.ipynb](/qtploter.ipynb).
 
 ## Installation
 After installing, please delete old profiles by clicking Settings->Remove and restart the program again if you are using versions older than 2018.12.03.
