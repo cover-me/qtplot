@@ -1,5 +1,5 @@
 ![alt tag](screenshot.png)
-This screenshot is taken from the forked project. Newer screenshots are available at the end of this document.
+This screenshot is taken from the forked project. Newer (but not the newest) screenshots are available at the end of this document.
 
 ## Introduction
 
