@@ -313,6 +313,7 @@ class Canvas(scene.SceneCanvas):
             self.mouse_end = (x, y)
         else:
             self.mouse_end = (x, y)
+            self.line_coord = zip(self.mouse_start,self.mouse_end)
 
             # Create datapoints on the line to interpolate over
             x_start, y_start = self.mouse_start

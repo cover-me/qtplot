@@ -428,7 +428,8 @@ class ExportWidget(QtGui.QWidget):
                         plt.axhline(linetrace.position, color='red')
                     elif linetrace.type == 'vertical':
                         plt.axvline(linetrace.position, color='red')
-
+                    else:
+                        plt.plot(linetrace.position[0],linetrace.position[1],color='red')
             self.fig.tight_layout()
             self.canvas.draw()
             #update the parameters
