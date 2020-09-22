@@ -428,7 +428,8 @@ class ExportWidget(QtGui.QWidget):
                         plt.axhline(linetrace.position, color='red')
                     elif linetrace.type == 'vertical':
                         plt.axvline(linetrace.position, color='red')
-
+                    else:
+                        plt.plot(linetrace.position[0],linetrace.position[1],color='red')
             self.fig.tight_layout()
             self.canvas.draw()
             #update the parameters
@@ -532,9 +533,9 @@ class ExportWidget(QtGui.QWidget):
             self.canvas.draw()
     def on_run(self):
         cmdstr = str(self.cb_cmd.currentText())
-        if cmdstr.startswith("plt.") or cmdstr.startswith('self'):
-            try:
+        try:
+            if cmdstr.startswith("plt.") or cmdstr.startswith('self'):
                 self.le_ans.setText('')
                 exec(cmdstr)
-            except:
-                self.le_ans.setText('Error!')
+        except:
+            self.le_ans.setText('Error!')

@@ -850,13 +850,17 @@ class Data2D:
         indices = np.arange(start, end + 1)
 
         if type == 'horizontal':
-            x, y, index = self.get_row_at(position)
+            x, y, row_numbers, index = self.get_row_at(position)
+            if start + index < 0 or end + index > self.z.shape[0]-1:
+                return
             y = np.mean(self.z[index+indices,:], axis=0)
             y = np.tile(y, (self.z.shape[0],1))
         elif type == 'vertical':
-            x, y, index = self.get_column_at(position)
-            y = np.mean(self.z[:,index+indices][:,np.newaxis], axis=1)
-            y = np.tile(y, (1, self.z.shape[1]))
+            x, y, row_numbers, index = self.get_column_at(position)
+            if start + index < 0 or end + index > self.z.shape[1]-1:
+                return
+            y = np.mean(self.z[:,index+indices], axis=1)
+            y = np.tile(y[:,np.newaxis], (1, self.z.shape[1]))
 
         self.z -= y
 
