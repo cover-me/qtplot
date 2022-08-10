@@ -22,6 +22,10 @@ While qtplot is convenient for measurements, it has limitations for the publicat
 ## Installation
 After installing, please delete old profiles by clicking Settings->Remove and restart the program again if you are using versions older than 2018.12.03.
 
+### Run the excutable directly on Windows
+
+The 7z file can be found in the [realsese](https://github.com/cover-me/qtplot/releases). Download, upzip, and run qtplot.exe. On Windows 7 one may need to rename the root folder to "lib" otherwise the program may not be able to find the file tcl85 (see logs in C:\Users\username\.qtplot for more details if the program fails to load).
+
 ### Install qtplot with Anaconda Python
 Qtplot is compatible with both Python 2 and 3. Using the Anaconda Python distribution (https://www.continuum.io/downloads) is recommended to make installing packages like `numpy` and `scipy` easier.
 
