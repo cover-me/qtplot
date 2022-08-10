@@ -24,7 +24,7 @@ After installing, please delete old profiles by clicking Settings->Remove (or de
 
 ### Run the excutable directly on Windows
 
-The 7z file can be found in the [realsese](https://github.com/cover-me/qtplot/releases). Download, upzip, and run qtplot.exe. On Windows 7 one may need delete numbers in the name of the parent folder (for example, rename "qt_plot.2020.09.21" to "qtplot") otherwise the program may fail to run (see logs in C:\\Users\\username\\.qtplot for more details if the program fails to run).
+The 7z file can be found in the [realsese](https://github.com/cover-me/qtplot/releases). Download, upzip, and run qtplot.exe. On Windows 7 one may need delete numbers in the name of the parent folder (for example, rename "qt_plot.2020.09.21" to "qtplot") and higher-level folders otherwise the program may fail to run (see logs in C:\\Users\\username\\.qtplot for more details if the program fails to run).
 
 ### Install qtplot with Anaconda Python
 Qtplot is compatible with both Python 2 and 3. Using the Anaconda Python distribution (https://www.continuum.io/downloads) is recommended to make installing packages like `numpy` and `scipy` easier.
