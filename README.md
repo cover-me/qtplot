@@ -20,11 +20,11 @@ This [video](https://cover-me.github.io/images/qtplot_plot_replot.mp4) shows how
 While qtplot is convenient for measurements, it has limitations for the publication purpose. For example, qtplot can't produce figures with multiple sub-panels. The freedom of modifying the colorbar and ticks is low. A Jupyter Notebook with pieces of code stolen from qtplot would make customizing of figures easily. Here is an example ~~[qtplotter.ipynb](/qtplotter.ipynb)~~ [qtplotter examples](https://github.com/cover-me/qtplotter/blob/master/example.ipynb).
 
 ## Installation
-After installing, please delete old profiles by clicking Settings->Remove and restart the program again if you are using versions older than 2018.12.03.
+After installing, please delete old profiles by clicking Settings->Remove (or delete the folder C:\\Users\\username\\.qtplot) and restart the program again if you are using versions older than 2018.12.03.
 
 ### Run the excutable directly on Windows
 
-The 7z file can be found in the [realsese](https://github.com/cover-me/qtplot/releases). Download, upzip, and run qtplot.exe. On Windows 7 one may need to rename the root folder to "lib" otherwise the program may not be able to find the file tcl85 (see logs in C:\Users\username\.qtplot for more details if the program fails to load).
+The 7z file can be found in the [realsese](https://github.com/cover-me/qtplot/releases). Download, upzip, and run qtplot.exe. On Windows 7 one may need delete numbers in the name of the parent folder (for example, rename "qt_plot.2020.09.21" to "qtplot") otherwise the program may fail to run (see logs in C:\\Users\\username\\.qtplot for more details if the program fails to run).
 
 ### Install qtplot with Anaconda Python
 Qtplot is compatible with both Python 2 and 3. Using the Anaconda Python distribution (https://www.continuum.io/downloads) is recommended to make installing packages like `numpy` and `scipy` easier.
