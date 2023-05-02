@@ -1,5 +1,4 @@
-![alt tag](screenshot.png)
-This screenshot is taken from the forked project. Newer (but not the newest) screenshots are available at the end of this document.
+![qtlab_qtplot](https://user-images.githubusercontent.com/22870592/235605587-2e7a435f-8268-45af-8b84-4c0c5899fc80.gif)
 
 ## Introduction
 
