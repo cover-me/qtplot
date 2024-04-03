@@ -11,6 +11,8 @@ This is a project forked from [Rubenknex/qtplot](https://github.com/Rubenknex/qt
 * Import 3D scanned data and show 2D slice by choosing the 3rd axis and the index to slice.
 * Other features: Improve the "incremental" mode for better hystersis diagrams with multiple lines; Add filters that subtract Rin and normalize G/R to quantuam conductance/resistance respectively; Show multiple 2D graphs on a signle canvas. Optimize the GUI.
 * ...
+  
+A portable version for Windows is available on this [page](https://github.com/cover-me/qtplot/releases/tag/2020.09.21).
 
 This [video](https://cover-me.github.io/images/qtplot_with_qtlab.mp4) demos how it plots real-time data with [qtlab](https://github.com/heeres/qtlab). The GUI may be out of date.
 
