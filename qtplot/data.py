@@ -275,10 +275,18 @@ class Data2D:
         ya = abs(y[0,0]-y[0,-1])
         yb = abs(y[0,0]-y[-1,0])
         if (xa<xb and yb<ya) or (xa>xb and yb<ya and yb/ya<xb/xa) or (xa<xb and yb>ya and ya/yb>xa/xb):
+            self.scan_info = {'inner_loop':'y'}
             x = x.T
             y = y.T
             z = z.T
             row_numbers = row_numbers.T
+        else:
+            self.scan_info = {'inner_loop':'x'}
+        self.scan_info['x_pts'] = len(x[0])
+        self.scan_info['y_pts'] = len(y)
+        self.scan_info['x_dir'] = self.get_scan_dir_symbol(x[0,0]<=x[0,-1], self.scan_info['inner_loop']=='x')
+        self.scan_info['y_dir'] = self.get_scan_dir_symbol(y[0,0]<=y[-1,0], self.scan_info['inner_loop']=='y')
+            
         if x[0,0]>x[0,-1]:
             x = np.fliplr(x)
             y = np.fliplr(y)
@@ -297,6 +305,12 @@ class Data2D:
         # Store column and row averages for linetrace lookup
         self.x_means = np.nanmean(self.x, axis=0)
         self.y_means = np.nanmean(self.y, axis=1)
+        
+    def get_scan_dir_symbol(self,is_increasing,is_inner_loop):
+        if is_increasing:
+            return '-->' if is_inner_loop else '==>'
+        else:
+            return '<--' if is_inner_loop else '<=='
     
     def save_meta(self,f):
         xlabel, ylabel, zlabel, title = self.dat_file.main.export_widget.get_format_axis_names()
@@ -609,10 +623,14 @@ class Data2D:
         return x_flip, y_flip
 
     def copy(self):
-        return Data2D(np.copy(self.x), np.copy(self.y), np.copy(self.z), np.copy(self.row_numbers),
+        scan_info_old = self.scan_info
+        d = Data2D(np.copy(self.x), np.copy(self.y), np.copy(self.z), np.copy(self.row_numbers),
                       self.x_name, self.y_name, self.z_name,
                       self.filename, self.timestamp, self.dat_file)
-
+        for i in scan_info_old:
+            d.scan_info[i] = scan_info_old[i]
+        return d
+        
     def abs(self):
         """Take the absolute value of every datapoint."""
         self.z = np.absolute(self.z)
