@@ -51,7 +51,7 @@ WinPython is a free open-source portable distribution of Python.
 
 Download WinPython-32bit-2.7.9.5 installer and run it. The installer only copies files to a destination directory.
  
-Open "WinPython Command Prompt.exe" in the destination directory. Type "pip install qtplot". Some of your packages may be auto degraded/updated to meet the requirement of qtplot.
+Open "WinPython Command Prompt.exe" in the destination directory. Type "pip install qtplot" (Update: there are "issues" using pip in python 2). Some of your packages may be auto degraded/updated to meet the requirement of qtplot.
 
 Find qtplot.exe in folder \python-2.7.9\Scripts.
 
@@ -65,12 +65,14 @@ Download the whole project and create a .py file in the project folder, with the
 	from qtplot import qtplot
 	qtplot.main()
 
-Assuming the file you created names 'qt_plot.py' and WinPython-32bit-2.7.9.5 is used, open "WinPython Command Prompt.exe" and execute:
+Assuming the file you created names 'qt_plot-YYMMDD.py' and WinPython-32bit-2.7.9.5 is used, open "WinPython Command Prompt.exe" and execute:
 
 	cd [directory]
-	pyinstaller --hidden-import vispy.app.backends._pyqt4 --add-data qtplot\colormaps;qtplot\colormaps --noconsole qt_plot.py
+	pyinstaller --hidden-import vispy.app.backends._pyqt4 --add-data qtplot\colormaps;qtplot\colormaps --noconsole qt_plot-YYMMDD.py
 
-Replace [directory] with the path of your qtplot project folder.
+Replace [directory] with the path of your qtplot project folder. 
+
+If pyinstaller has not been installed for WinPython-32bit-2.7.9.5, run `easy_install pip==20` to upgrade pip, then run `pip install pyinstaller==3.3` to install pyinstaller (newer or older versions seem not work on Windows 11 with python 2.7). Try a different computer if it does not work, this is very tricky.
 
 Sometimes the excutable may fail to run on a computer because of missing init.tcl and .tk files. Click [here](https://stackoverflow.com/questions/42180492/pyinstaller-fails-on-windows-7-cant-find-a-usable-init-tcl) for a solution (I prefer copying the missing file manually).
 
