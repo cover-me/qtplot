@@ -36,12 +36,12 @@ PROFILE_DEFAULTS = OrderedDict((
     ('max','1'),
     ('gamma','0'),
     ('auto_color',True),
-    ('title', '<a3><\\n><filename> <operations>'),
+    ('title', '<filename> <operations>'),
     ('DPI', '80,80,300'),
     ('rasterize', True),
     ('hold', False),
-    ('x_label', '<x>'),
-    ('y_label', '<y>'),
+    ('x_label', '<x>, <x_dir>'),
+    ('y_label', '<y>, <y_dir>'),
     ('z_label', '<z>'),
     ('x_format', '%%f'),
     ('y_format', '%%f'),
@@ -651,7 +651,6 @@ class QTPlot(QtGui.QMainWindow):
         a3index_max = self.dat_file.shape[a3]-1
         return a3,a3index,a3index_max
 
-
     def on_data_change(self):
         """
         This is called when anything concerning the data has changed. This can
@@ -688,9 +687,10 @@ class QTPlot(QtGui.QMainWindow):
         self.data = self.dat_file.get_data(x_name,y_name,data_name,a3,a3index) # return Data2D object
         if self.data is None:
             return
-
+            
         # Apply the selected operations
         self.data = self.operations.apply_operations(self.data)
+        
 
         # If we want to reset the colormap for each data update, do so
         if self.cb_reset_cmap.checkState() == QtCore.Qt.Checked:
