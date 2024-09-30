@@ -73,10 +73,10 @@ class ExportWidget(QtGui.QWidget):
                 w.setMinimumWidth(20)
                 
         grid_general = QtGui.QGridLayout()
-
+        
         grid_general.addWidget(QtGui.QLabel('Title'), 1, 1)
         self.le_title = QtGui.QLineEdit('test')
-        self.le_title.setToolTip('<filename>, <operations>, something like <ivvi:dac1>, ...')
+        self.le_title.setToolTip('<filename>\n<operations>: something like <ivvi:dac1>, see View-Settings.\n<x>, <y>, <z>: labels\n<x_dir>, <y_dir>: Scan directions. --> for inner loop, ==> for outer loop\n<x_pts>, <y_pts>\n<\\n>\n<gamma>: (min, gamma, max)\n<winSize>: Window size\n<a3>: Name and value of the third axis')
         grid_general.addWidget(self.le_title, 1, 2)
 
         grid_general.addWidget(QtGui.QLabel('DPI'), 1, 3)
@@ -100,7 +100,9 @@ class ExportWidget(QtGui.QWidget):
         # X-axis
         grid.addWidget(QtGui.QLabel('X Label'), 2, 1)
         self.le_x_label = QtGui.QLineEdit('test')
+        self.le_x_label.setToolTip('See tips for the title.')
         grid.addWidget(self.le_x_label, 2, 2)
+
 
         grid.addWidget(QtGui.QLabel('X Format'), 2, 3)
         self.le_x_format = QtGui.QLineEdit('%f')
@@ -116,6 +118,7 @@ class ExportWidget(QtGui.QWidget):
         # Y-axis
         grid.addWidget(QtGui.QLabel('Y Label'), 3, 1)
         self.le_y_label = QtGui.QLineEdit('test')
+        self.le_y_label.setToolTip('See tips for the title.')
         grid.addWidget(self.le_y_label, 3, 2)
 
         grid.addWidget(QtGui.QLabel('Y Format'), 3, 3)
@@ -291,6 +294,10 @@ class ExportWidget(QtGui.QWidget):
             '<x>': self.main.x_name,
             '<y>': self.main.y_name,
             '<z>': self.main.data_name,
+            '<x_dir>': self.main.data.scan_info['x_dir'],
+            '<y_dir>': self.main.data.scan_info['y_dir'],
+            '<x_pts>': self.main.data.scan_info['x_pts'],
+            '<y_pts>': self.main.data.scan_info['y_pts'],
             '<return>':'\n',
             '<\\n>':'\n',
             '<gamma>':'(%s %s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text()),
