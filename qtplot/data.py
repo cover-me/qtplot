@@ -218,12 +218,21 @@ class DatFile:
         else:
             self.a3_sp = ''
         
+        # Remove NaN rows
         nans = np.isnan(row_numbers[:,0])
         x = x[~nans]
         y = y[~nans]
         z = z[~nans]
         row_numbers = row_numbers[~nans]
-
+        
+        # If 1d, remove NaN elements
+        if len(row_numbers)==1:
+            nans = np.isnan(row_numbers[0])
+            x = x[:,~nans]
+            y = y[:,~nans]
+            z = z[:,~nans]
+            row_numbers = row_numbers[:,~nans]
+        
         return Data2D(x, y, z, row_numbers, x_name, y_name, z_name, self.filename, self.timestamp, self)
 
 
@@ -949,7 +958,3 @@ class Data2D:
             self.z[1::2, :shift] = self.z[1::2, shift-1::-1]
         else:
             self.z[1::2, :] = self.z[1::2, ::-1]
-            
-            
-        
-        
