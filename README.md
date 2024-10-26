@@ -25,6 +25,7 @@ While qtplot is convenient for measurements, it has limitations for the publicat
 After installing, please delete old profiles by clicking Settings->Remove (or delete the folder C:\\Users\\username\\.qtplot) and restart the program again if you are using versions older than 2018.12.03.
 
 ### Create a portable version of qtplot with PyInstaller
+
 With PyInstaller, you can package qtplot into a small and portable folder with an executable inside.
 
 Make sure your python meets the requirements of qtplot (by installing it with the methods above...).
@@ -41,7 +42,7 @@ Assuming the file you created names 'qtplot-YYMMDD.py' and WinPython-32bit-2.7.9
 
 Replace [directory] with the path of your qtplot project folder. 
 
-If pyinstaller has not been installed for WinPython-32bit-2.7.9.5, run `easy_install pip==20` to upgrade pip, then run `pip install pyinstaller==3.3` to install pyinstaller (newer or older versions seem not work on Windows 11 with python 2.7). Try a different computer if it does not work, this is very tricky.
+If pyinstaller has not been installed for WinPython-32bit-2.7.9.5, run `easy_install pip==20` to upgrade pip, then run `pip install pyinstaller==3.3` to install pyinstaller (newer or older versions seem not work on Windows 11 with python 2.7). Run `pip install vispy==0.4` to install vispy.
 
 Sometimes the excutable may fail to run on a computer because of missing init.tcl and .tk files. Click [here](https://stackoverflow.com/questions/42180492/pyinstaller-fails-on-windows-7-cant-find-a-usable-init-tcl) for a solution (I prefer copying the missing file manually).
 
