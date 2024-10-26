@@ -76,7 +76,7 @@ class ExportWidget(QtGui.QWidget):
         
         grid_general.addWidget(QtGui.QLabel('Title'), 1, 1)
         self.le_title = QtGui.QLineEdit('test')
-        self.le_title.setToolTip('<filename>\n<operations>: something like <ivvi:dac1>, see View-Settings.\n<x>, <y>, <z>: labels\n<x_dir>, <y_dir>: Scan directions. --> for inner loop, ==> for outer loop\n<x_pts>, <y_pts>\n<\\n>\n<gamma>: (min, gamma, max)\n<winSize>: Window size\n<a3>: Name and value of the third axis')
+        self.le_title.setToolTip('<filename>\n<operations>: something like <ivvi:dac1>, see View-Settings.\n<x>, <y>, <z>: labels\n<x_dir>, <y_dir>: Scan directions. --> for inner loop, ==> for outer loop\n<x_pts>, <y_pts>\n<ts>: timestamp\n<\\n>\n<gamma>: (min, gamma, max)\n<winSize>: Window size\n<a3>: Name and value of the third axis')
         grid_general.addWidget(self.le_title, 1, 2)
 
         grid_general.addWidget(QtGui.QLabel('DPI'), 1, 3)
@@ -298,6 +298,7 @@ class ExportWidget(QtGui.QWidget):
             '<y_dir>': self.main.data.scan_info['y_dir'],
             '<x_pts>': str(self.main.data.scan_info['x_pts']),
             '<y_pts>': str(self.main.data.scan_info['y_pts']),
+            '<ts>': str(self.main.data.timestamp),
             '<return>':'\n',
             '<\\n>':'\n',
             '<gamma>':'(%s %s %s)'%(self.main.le_min.text(),self.main.le_gamma.text(),self.main.le_max.text()),
