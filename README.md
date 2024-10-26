@@ -26,7 +26,7 @@ After installing, please delete old profiles by clicking Settings->Remove (or de
 
 ### Create a portable version of qtplot with PyInstaller
 
-With PyInstaller, you can package qtplot into a small and portable folder with an executable inside.
+Using PyInstaller, you can package qtplot into a compact and portable folder that contains an executable. You can download the folder with the executable directly from the [release](https://github.com/cover-me/qtplot/releases) page or build it using the method outlined below.
 
 Make sure your python meets the requirements of qtplot (by installing it with the methods above...).
 
