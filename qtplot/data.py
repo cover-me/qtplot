@@ -800,16 +800,6 @@ class Data2D:
 
         self.set_data(np.tile(x_avg, (points,1)), np.tile(y, (1,cols)), values)
 
-    def log(self, subtract, min):
-        """The base-10 logarithm of every datapoint."""
-        minimum = np.nanmin(self.z)
-
-        if subtract:
-            #self.z[self.z < 0] = newmin
-            self.z += (min - minimum)
-
-        self.z = np.log10(self.z)
-
     def lowpass(self, x_width=3, y_height=3, method='gaussian'):
         """Perform a low-pass filter."""
         kernel = create_kernel(x_width, y_height, 7, method)
@@ -834,27 +824,41 @@ class Data2D:
 
         self.z = np.apply_along_axis(func, 1, self.z)
 
-    def offset(self, offset=0):
+    def offset(self, x_offset=0, y_offset=0, z_offset=0):
         """Add a value to every datapoint."""
-        self.z += offset
+        if x_offset != 0:
+            self.x += x_offset
+        if y_offset != 0:
+            self.y += y_offset
+        if z_offset != 0:
+            self.z += z_offset
 
-    def offset_axes(self, x_offset=0, y_offset=0):
-        """Add an offset value to the axes."""
-        self.x += x_offset
-        self.y += y_offset
-
-    def power(self, power=1):
+    def power(self, x_power=1, y_power=1, z_power=1):
         """Raise the datapoints to a power."""
-        self.z = np.power(self.z, power)
+        if x_power != 1:
+            self.x = np.power(self.x, x_power)
+        if y_power != 1:
+            self.y = np.power(self.y, y_power)
+        if z_power != 1:
+            self.z = np.power(self.z, z_power)
+        
+    def scale(self, x_scale=1, y_scale=1, z_scale=1):
+        """Scale x, y, and z values."""
+        if x_scale != 1:
+            self.x *= x_scale
+        if y_scale != 1:
+            self.y *= y_scale
+        if z_scale != 1:
+            self.z *= z_scale
 
-    def scale_axes(self, x_scale=1, y_scale=1):
-        """Multiply the axes values by a number."""
-        self.x *= x_scale
-        self.y *= y_scale
-
-    def scale_data(self, factor):
-        """Multiply the datapoints by a number."""
-        self.z *= factor
+    def log(self, x, y, z):
+        """The base-10 logarithm of every datapoint."""
+        if x:
+            self.x = np.log10(self.x)
+        if y:
+            self.y = np.log10(self.y)
+        if z:
+            self.z = np.log10(self.z)
 
     def sub_linecut(self, type, position):
         """Subtract a horizontal/vertical linecut from every row/column."""
@@ -958,3 +962,7 @@ class Data2D:
             self.z[1::2, :shift] = self.z[1::2, shift-1::-1]
         else:
             self.z[1::2, :] = self.z[1::2, ::-1]
+            
+            
+        
+        
