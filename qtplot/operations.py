@@ -157,7 +157,7 @@ class Operations(QtGui.QDialog):
                                                  ('height', 100)]],
             'interp x': [Data2D.interp_x, [('points', 100)]],
             'interp y': [Data2D.interp_y, [('points', 100)]],
-            'log': [Data2D.log, [('x', False), ('y', False), ('z', True),]],
+            'log': [Data2D.log, [('x', False), ('y', False), ('z', False),]],
             'lowpass': [Data2D.lowpass, [('x_width', 3.0),
                                          ('y_height', 3.0),
                                          ('method', ['gaussian',
@@ -172,6 +172,7 @@ class Operations(QtGui.QDialog):
             'scale': [Data2D.scale, [('x_scale', 1.0), ('y_scale', 1.0), ('z_scale', 1.0)]],
             'sub linecut': [Data2D.sub_linecut, [('type', ['horizontal', 'vertical']), ('position', float('nan'))]],
             'sub linecut avg': [Data2D.sub_linecut_avg, [('type', ['horizontal', 'vertical']), ('position', float('nan')), ('size', 3)]],
+            'sub_min': [Data2D.sub_min, [('x', False),('y', False),('z', False)]],
             'sub plane': [Data2D.sub_plane, [('x_slope', 0.0),
                                              ('y_slope', 0.0)]],
             'xderiv': [Data2D.xderiv, [('method', ['midpoint',
@@ -304,6 +305,16 @@ class Operations(QtGui.QDialog):
         with open(filename, 'w') as f:
             f.write(json.dumps(operations, indent=4))
 
+    def para_value_to_str(self, val):
+        if type(val)==str:
+            return val[0:3] 
+        elif type(val)==bool:
+            return str(val)[0]
+        elif type(val)==float and int(val)==val:
+            return str(int(val))
+        else:
+            return str(val)
+    
     def apply_operations(self, data):
         copy = data.copy()
         self.op_str = ''
@@ -335,7 +346,7 @@ class Operations(QtGui.QDialog):
                         op.set_parameter('type', self.main.canvas.line_type)
                         op.set_parameter('position', self.main.canvas.line_coord)
 
-            _ = [i[0:3] if type(i)==str else str(i) for i in [op.get_parameter(name) for name in op.para_names]]#function parameters
+            _ = [self.para_value_to_str(i) for i in [op.get_parameter(name) for name in op.para_names]]#function parameters
             self.op_str += '%s[%s];'%(op.name,','.join(_))
             
             kwargs = op.get_parameters()[1]
