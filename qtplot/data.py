@@ -293,8 +293,8 @@ class Data2D:
             self.scan_info = {'inner_loop':'x'}
         self.scan_info['x_pts'] = len(x[0])
         self.scan_info['y_pts'] = len(y)
-        self.scan_info['x_dir'] = self.get_scan_dir_symbol(x[0,0]<=x[0,-1], self.scan_info['inner_loop']=='x')
-        self.scan_info['y_dir'] = self.get_scan_dir_symbol(y[0,0]<=y[-1,0], self.scan_info['inner_loop']=='y')
+        self.scan_info['x_dir'] = self.get_scan_dir_symbol(x[0], self.scan_info['inner_loop']=='x')
+        self.scan_info['y_dir'] = self.get_scan_dir_symbol(y[:,0], self.scan_info['inner_loop']=='y')
             
         if x[0,0]>x[0,-1]:
             x = np.fliplr(x)
@@ -315,7 +315,16 @@ class Data2D:
         self.x_means = np.nanmean(self.x, axis=0)
         self.y_means = np.nanmean(self.y, axis=1)
         
-    def get_scan_dir_symbol(self,is_increasing,is_inner_loop):
+    def get_scan_dir_symbol(self,a,is_inner_loop):
+        if len(a)==1:
+            return ''
+        if np.isnan(a[-1]):
+            if np.isnan(a[1]):
+                return ''
+            else:
+                is_increasing = a[0]<a[1]
+        else:
+            is_increasing = a[0]<a[-1]
         if is_increasing:
             return '-->' if is_inner_loop else '==>'
         else:
@@ -852,7 +861,7 @@ class Data2D:
             self.z *= z_scale
 
     def log(self, x, y, z):
-        """The base-10 logarithm of every datapoint."""
+        """The base-10 logarithm."""
         if x:
             self.x = np.log10(self.x)
         if y:
@@ -870,6 +879,15 @@ class Data2D:
             y = np.tile(self.z[:,index][:,np.newaxis], (1, self.z.shape[1]))
 
         self.z -= y
+        
+    def sub_min(self,x,y,z):
+        """Subtract the minimum value"""
+        if x:
+            self.x -= np.nanmin(self.x)
+        if y:
+            self.y -= np.nanmin(self.y)
+        if z:
+            self.z -= np.nanmin(self.z)
 
     def sub_linecut_avg(self, type, position, size):
         """Subtract a horizontal/vertical averaged linecut from every row/column."""
