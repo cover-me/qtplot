@@ -34,10 +34,10 @@ Download the whole project and create a .py file in the project folder, with the
 	from qtplot import qtplot
 	qtplot.main()
 
-Assuming the file you created names 'qt_plot-YYMMDD.py' and WinPython-32bit-2.7.9.5 is used, open "WinPython Command Prompt.exe" and execute:
+Assuming the file you created names 'qtplot-YYMMDD.py' and WinPython-32bit-2.7.9.5 is used, open "WinPython Command Prompt.exe" and execute:
 
 	cd [directory]
-	pyinstaller --hidden-import vispy.app.backends._pyqt4 --add-data qtplot\colormaps;qtplot\colormaps --noconsole qt_plot-YYMMDD.py
+	pyinstaller --hidden-import vispy.app.backends._pyqt4 --add-data qtplot\colormaps;qtplot\colormaps --noconsole qtplot-YYMMDD.py
 
 Replace [directory] with the path of your qtplot project folder. 
 
