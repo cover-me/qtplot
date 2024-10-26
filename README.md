@@ -21,7 +21,29 @@ This [video](https://cover-me.github.io/images/qtplot_plot_replot.mp4) shows how
 While qtplot is convenient for measurements, it has limitations for the publication purpose. For example, qtplot can't produce figures with multiple sub-panels. The freedom of modifying the colorbar and ticks is low. A Jupyter Notebook with pieces of code stolen from qtplot would make customizing of figures easily. Here is an example ~~[qtplotter.ipynb](/qtplotter.ipynb)~~ [qtplotter examples](https://github.com/cover-me/qtplotter/blob/master/example.ipynb).
 
 ## Installation
+
 After installing, please delete old profiles by clicking Settings->Remove (or delete the folder C:\\Users\\username\\.qtplot) and restart the program again if you are using versions older than 2018.12.03.
+
+### Create a portable version of qtplot with PyInstaller
+With PyInstaller, you can package qtplot into a small and portable folder with an executable inside.
+
+Make sure your python meets the requirements of qtplot (by installing it with the methods above...).
+
+Download the whole project and create a .py file in the project folder, with the following codes:
+	
+	from qtplot import qtplot
+	qtplot.main()
+
+Assuming the file you created names 'qt_plot-YYMMDD.py' and WinPython-32bit-2.7.9.5 is used, open "WinPython Command Prompt.exe" and execute:
+
+	cd [directory]
+	pyinstaller --hidden-import vispy.app.backends._pyqt4 --add-data qtplot\colormaps;qtplot\colormaps --noconsole qt_plot-YYMMDD.py
+
+Replace [directory] with the path of your qtplot project folder. 
+
+If pyinstaller has not been installed for WinPython-32bit-2.7.9.5, run `easy_install pip==20` to upgrade pip, then run `pip install pyinstaller==3.3` to install pyinstaller (newer or older versions seem not work on Windows 11 with python 2.7). Try a different computer if it does not work, this is very tricky.
+
+Sometimes the excutable may fail to run on a computer because of missing init.tcl and .tk files. Click [here](https://stackoverflow.com/questions/42180492/pyinstaller-fails-on-windows-7-cant-find-a-usable-init-tcl) for a solution (I prefer copying the missing file manually).
 
 ### Run the excutable directly on Windows
 
@@ -54,27 +76,6 @@ Download WinPython-32bit-2.7.9.5 installer and run it. The installer only copies
 Open "WinPython Command Prompt.exe" in the destination directory. Type "pip install qtplot" (Update: there are "issues" using pip in python 2). Some of your packages may be auto degraded/updated to meet the requirement of qtplot.
 
 Find qtplot.exe in folder \python-2.7.9\Scripts.
-
-### Create a portable version of qtplot with PyInstaller
-With PyInstaller, you can package qtplot into a small and portable folder with an executable inside.
-
-Make sure your python meets the requirements of qtplot (by installing it with the methods above...).
-
-Download the whole project and create a .py file in the project folder, with the following codes:
-	
-	from qtplot import qtplot
-	qtplot.main()
-
-Assuming the file you created names 'qt_plot-YYMMDD.py' and WinPython-32bit-2.7.9.5 is used, open "WinPython Command Prompt.exe" and execute:
-
-	cd [directory]
-	pyinstaller --hidden-import vispy.app.backends._pyqt4 --add-data qtplot\colormaps;qtplot\colormaps --noconsole qt_plot-YYMMDD.py
-
-Replace [directory] with the path of your qtplot project folder. 
-
-If pyinstaller has not been installed for WinPython-32bit-2.7.9.5, run `easy_install pip==20` to upgrade pip, then run `pip install pyinstaller==3.3` to install pyinstaller (newer or older versions seem not work on Windows 11 with python 2.7). Try a different computer if it does not work, this is very tricky.
-
-Sometimes the excutable may fail to run on a computer because of missing init.tcl and .tk files. Click [here](https://stackoverflow.com/questions/42180492/pyinstaller-fails-on-windows-7-cant-find-a-usable-init-tcl) for a solution (I prefer copying the missing file manually).
 
 ### Run the codes directly
 Make sure your python meets the requirements of qtplot (by installing it with the methods above...).
